@@ -40,11 +40,11 @@ required height in pixels and outputs a Python 3 source file. The pixel layout
 is determined by command arguments. Arguments also define whether the font is to
 be stored in proportional or fixed width form.
 
-Further arguments will be specified by the documentation for the specific
-device driver in use. They ensure that the byte contents and layout are correct
-for the target display hardware.
+Further arguments ensure that the byte contents and layout are correct for the
+target display hardware. Their usage should be defined in the documentation for
+the device driver.
 
-Example usage to produce a file ``myfont.py`` with height of 23 pixels
+Example usage to produce a file ``myfont.py`` with height of 23 pixels:  
 ``font_to_py.py FreeSans.ttf 23 -o myfont.py``
 
 ## Arguments
@@ -61,8 +61,6 @@ Example usage to produce a file ``myfont.py`` with height of 23 pixels
  default fonts are assumed to be variable pitch.
  * -h Specifies horizontal mapping (default is vertical).
  * -b Specifies big-endian bytes (default little endian).
- * -n For variable pitch fonts specifies that blank advance bits should be
- omitted from the character map.
 
 Optional arguments other than the fixed pitch argument will be specified in the
 device driver documentation.
@@ -106,15 +104,13 @@ The user program imports a Python font file. This instantiates a ``PyFont``
 object with appropriate constructor arguments such as the metrics of the
 specific font. When the user program needs to display a string it passes the
 instance to the device driver. The instance exposes appropriate font metrics
-defined in pixels and a ``get_ch()`` method. The latter provides fast access to
-the bytes corresponding to an individual character together with character
+(defined in pixels) and a ``get_ch()`` method. The latter provides fast access
+to the bytes corresponding to an individual character together with character
 specific metrics.
 
-All fixed width characters include blank bits after the character bits to define
-the width. By default variable pitch characters include blank "advance" bits to
-provide correct spacing between characters. These may optionally be omitted from
-the data with the -n argument. In this instance the driver may supply them: the
-number of bits to be supplied is stored in byte 1 of the character data.
+Fixed width characters include blank bits after the character bits to pad out
+the width. Variable pitch characters include a small number of blank "advance"
+bits to provide correct spacing between characters.
 
 ## The PyFont class
 
@@ -124,24 +120,22 @@ as follows:
 ```python
 class PyFont(object):
     def __init__(self, font, index, vert, horiz):
-        self.bits_horiz = horiz     # Width of monospaced char or 0 if variable
-        self.bits_vert = vert       # Height of all chars
+        self._bits_horiz = horiz     # Width of monospaced char or 0 if variable
+        self._bits_vert = vert       # Height of all chars
         self._index = index
         self._font = font
 
     def get_ch(self, ch):
         from uctypes import addressof
         # Replace out of range characters with a default
-        # compute offset of current character bitmap and get char metrics
-        return addressof(self._font) + offset, self.bits_vert, char_width, advance)
+        # compute offset of current character bitmap and char width
+        return addressof(self._font) + offset, self._bits_vert, char_width)
 
     def get_properties(self):
-        return self.bits_vert, self.bits_horiz
+        return self._bits_vert, self._bits_horiz
 ```
 
-The device driver calls the ``get_ch`` method for each character. If the driver
-is to provide the advance (user told to use the -n option) the ``advance`` value
-is the number of bits to supply. Otherwise its value will be 0.
+The device driver calls the ``get_ch`` method for each character in a string.
 
 ## Font files
 
@@ -165,10 +159,9 @@ Python source file is a lesser consideration, with readability being prioritised
 over size. Hence they will be "pretty printed" with the large bytes objects
 split over multiple lines for readability.
 
-The bytes object for the font will store the character width in byte 0 and the
-advance in byte 1. This will be transparent to the device driver, the pointer
-returned by ``get_ch`` will be to the raw font data. This implies that the width
-will be restricted to 256 pixels: huge in the context of realistic hardware.
+The ``get_ch`` method will determine the character width from the difference
+between current and next index values and the font's vertical size: it does not
+require explicit storage.
 
 This general approach has been tested on a Pyboard connected to LCD hardware
 having an onboard frame buffer. The visual performance is good.
