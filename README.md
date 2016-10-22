@@ -1,7 +1,10 @@
 # micropython-font-to-py
 
 This is currently a work in progress. This document specifies a forthcoming
-module.
+module. Compared to my previous implementations this has the following aims:
+
+ * Independence of specific display hardware
+ * The path from font file to Python code to be fully open source.
 
 # Rationale
 
@@ -75,6 +78,16 @@ from myfont import myfont
 
 The ``myfont`` instance will then be used by the device driver to render strings
 on demand.
+
+# Dependencies, links and licence
+
+The code is released under the MIT licence.
+
+The module relies on [Freetype](https://www.freetype.org/) which is included in most Linux distributions.  
+It uses the [Freetype Python bindings](http://freetype-py.readthedocs.io/en/latest/index.html)
+which will need to be installed.  
+My solution draws on the excellent example code written by Daniel Bader. This
+may be viewed [here](https://dbader.org/blog/monochrome-font-rendering-with-freetype-and-python) and [here](https://gist.github.com/dbader/5488053).
 
 # Implementation
 
