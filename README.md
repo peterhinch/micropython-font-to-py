@@ -1,5 +1,3 @@
-TODO change big-endian to something like bit ordering
-
 # micropython-font-to-py
 
 This is currently a work in progress. This document specifies a forthcoming
