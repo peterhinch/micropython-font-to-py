@@ -1,9 +1,11 @@
+TODO change big-endian to something like bit ordering
+
 # micropython-font-to-py
 
 This is currently a work in progress. This document specifies a forthcoming
 module. Compared to my previous implementations this has the following aims:
 
- * Independence of specific display hardware
+ * Independence of specific display hardware.
  * The path from font file to Python code to be fully open source.
 
 # Rationale
@@ -57,13 +59,13 @@ Example usage to produce a file ``myfont.py`` with height of 23 pixels:
 
 ### Optional arguments:
 
- * -f or --fixedpitch If specified, all characters will have the same width. By
+ * -f or --fixed If specified, all characters will have the same width. By
  default fonts are assumed to be variable pitch.
  * -h Specifies horizontal mapping (default is vertical).
- * -b Specifies big-endian bytes (default little endian).
+ * -b Specifies bit reversal in each font byte.
 
 Optional arguments other than the fixed pitch argument will be specified in the
-device driver documentation.
+device driver documentation. Bit reversal is required by some display hardware.
 
 ## The font file
 
@@ -119,9 +121,11 @@ as follows:
 
 ```python
 class PyFont(object):
-    def __init__(self, font, index, vert, horiz):
+    def __init__(self, font, index, vert, horiz, fixed, revbit):
         self._bits_horiz = horiz     # Width of monospaced char or 0 if variable
         self._bits_vert = vert       # Height of all chars
+        self._fixed = fixed          # Fixed pitch
+        self._revbit = revbit        # Bit reversal of font bytes
         self._index = index
         self._font = font
 
@@ -129,13 +133,15 @@ class PyFont(object):
         from uctypes import addressof
         # Replace out of range characters with a default
         # compute offset of current character bitmap and char width
-        return addressof(self._font) + offset, self._bits_vert, char_width)
+        return addressof(self._font) + offset, self._bits_vert, char_width
 
     def get_properties(self):
-        return self._bits_vert, self._bits_horiz
+        return self._bits_vert, self._bits_horiz, self._fixed, self._revbit
 ```
 
 The device driver calls the ``get_ch`` method for each character in a string.
+The ``get_properties`` method enables the driver to validate the Python font
+file.
 
 ## Font files
 
@@ -146,7 +152,7 @@ has the following outline definition (in practice the bytes objects are large):
 import pyfont
 _myfont = b'\x00\x00`
 _myfont_index = b'\x00\x00\x23\x00\`
-myfont = pyfont.PyFont(_myfont, _myfont_index, 24, 0)
+myfont = pyfont.PyFont(_myfont, _myfont_index, 24, 0, False, False)
 
 ```
 
