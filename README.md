@@ -22,15 +22,15 @@ very little RAM is used, yet the data may be accessed fast.
 It is intended that the resultant file be usable with a variety of display
 devices and drivers. These include:
 
- 1. Drivers using the official ``framebuffer`` class.
+ 1. A driver for the official ``framebuffer`` class.
  2. Drivers using ``bytearray`` instances as frame buffers.
  3. Drivers for devices where the frame buffer is implemented in external
  hardware.
 
 # Limitations
 
-Only the ASCII character set from chr(32) to chr(126) is supported. Kerning is
-not supported.
+Only the ASCII character set from ``chr(32)`` to ``chr(126)`` is supported.
+Kerning is not supported.
 
 # Usage
 
@@ -148,8 +148,8 @@ has the following outline definition (in practice the bytes objects are large):
 
 ```python
 import pyfont
-_myfont = b'\x00\x00`
-_myfont_index = b'\x00\x00\x23\x00\`
+_myfont = b'\x00\x00'
+_myfont_index = b'\x00\x00\x23\x00\'
 myfont = pyfont.PyFont(_myfont, _myfont_index, 24, 0, True, False)
 
 ```
