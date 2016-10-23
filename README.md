@@ -119,10 +119,10 @@ as follows:
 
 ```python
 class PyFont(object):
-    def __init__(self, font, index, vert, horiz, fixed, revbit):
+    def __init__(self, font, index, vert, horiz, vmap, revbit):
         self._bits_horiz = horiz     # Width of monospaced char or 0 if variable
         self._bits_vert = vert       # Height of all chars
-        self._fixed = fixed          # Fixed pitch
+        self._vmap = vmap            # Vertical map
         self._revbit = revbit        # Bit reversal of font bytes
         self._index = index
         self._font = font
@@ -134,7 +134,7 @@ class PyFont(object):
         return addressof(self._font) + offset, self._bits_vert, char_width
 
     def get_properties(self):
-        return self._bits_vert, self._bits_horiz, self._fixed, self._revbit
+        return self._bits_vert, self._bits_horiz, self._vmap, self._revbit
 ```
 
 The device driver calls the ``get_ch`` method for each character in a string.
@@ -150,9 +150,29 @@ has the following outline definition (in practice the bytes objects are large):
 import pyfont
 _myfont = b'\x00\x00`
 _myfont_index = b'\x00\x00\x23\x00\`
-myfont = pyfont.PyFont(_myfont, _myfont_index, 24, 0, False, False)
+myfont = pyfont.PyFont(_myfont, _myfont_index, 24, 0, True, False)
 
 ```
+
+## Mapping
+
+A character occupies a space where (0, 0) represents the coordinates of the top
+left hand corner of the bitmap. It comprises a set of pixels where increasing x
+values represent locations to the right of the origin and increasing y values
+represent downward positions. Mapping is the process whereby this two
+dimensional array of bits is transformed into a linear sequence of bytes.
+
+Vertical mapping means that the LSB of first byte is pixel (0,0), MSB of first
+byte is (0, 7). The second byte (assuming the height is greater than 8 pixels)
+is (0, 8) to (0, 15). Once the column is complete the next byte represents
+(1, 0) to (1, 7).
+
+Horizontal mapping means that the MSB of byte 0 is pixel (0,0) with LSB at
+(7,0), with the second byte covering (8, 0) to (15, 0) if the width is greater
+than 8.
+
+Bit reversal provides for the case where the bit order of each byte is reversed
+i.e. a byte comprising bits [b7b6b5b4b3b2b1b0] becomes [b0b1b2b3b4b5b6b7].
 
 # Specification Notes
 
