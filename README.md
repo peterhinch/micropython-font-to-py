@@ -30,7 +30,9 @@ devices and drivers. These include:
 # Limitations
 
 Only the ASCII character set from ``chr(32)`` to ``chr(126)`` is supported.
-Kerning is not supported.
+Kerning is not supported. Fonts are one bit per pixel. This does not rule out
+colour displays: the device driver can add colour information at the rendering
+stage.
 
 # Usage
 
@@ -71,11 +73,11 @@ Assume that the you have employed the utility to create a file ``myfont.py``. In
 your code you will issue
 
 ```python
-from myfont import myfont
+import myfont
 ```
 
-The ``myfont`` instance will then be used by the device driver to render strings
-on demand.
+The ``myfont`` module name will then be passed to the device driver to render
+strings on demand.
 
 # Dependencies, links and licence
 
@@ -100,46 +102,15 @@ device. The purpose of the command line arguments specified to the user is to
 ensure that the data layout is optimised for the device so that the copy is a
 simple bytewise copy.
 
-The user program imports a Python font file. This instantiates a ``PyFont``
-object with appropriate constructor arguments such as the metrics of the
-specific font. When the user program needs to display a string it passes the
-instance to the device driver. The instance exposes appropriate font metrics
-(defined in pixels) and a ``get_ch()`` method. The latter provides fast access
-to the bytes corresponding to an individual character together with character
-specific metrics.
+The user program imports a Python font file. When the user program needs to
+display a string it passes the module name to the device driver. The module
+exposes appropriate font metrics (defined in pixels) and a ``get_ch()``
+function. The latter provides fast access to the bytes corresponding to an
+individual character together with character specific metrics.
 
 Fixed width characters include blank bits after the character bits to pad out
-the width. Variable pitch characters include a small number of blank "advance"
-bits to provide correct spacing between characters.
-
-## The PyFont class
-
-This is defined in the file ``pyfont.py``. An outline definition of the class is
-as follows:
-
-```python
-class PyFont(object):
-    def __init__(self, font, index, vert, horiz, vmap, revbit):
-        self._bits_horiz = horiz     # Width of monospaced char or 0 if variable
-        self._bits_vert = vert       # Height of all chars
-        self._vmap = vmap            # Vertical map
-        self._revbit = revbit        # Bit reversal of font bytes
-        self._index = index
-        self._font = font
-
-    def get_ch(self, ch):
-        from uctypes import addressof
-        # Replace out of range characters with a default
-        # compute offset of current character bitmap and char width
-        return addressof(self._font) + offset, self._bits_vert, char_width
-
-    def get_properties(self):
-        return self._bits_vert, self._bits_horiz, self._vmap, self._revbit
-```
-
-The device driver calls the ``get_ch`` method for each character in a string.
-The ``get_properties`` method enables the driver to validate the Python font
-file.
+the width. Variable pitch characters include a small, character specific,
+number of blank "advance" bits to provide correct spacing between characters.
 
 ## Font files
 
@@ -147,12 +118,31 @@ Assume the user has run the utility to produce a file ``myfont.py`` This then
 has the following outline definition (in practice the bytes objects are large):
 
 ```python
-import pyfont
-_myfont = b'\x00\x00'
-_myfont_index = b'\x00\x00\x23\x00\'
-myfont = pyfont.PyFont(_myfont, _myfont_index, 24, 0, True, False)
+version = '0.1'
+height = 23
+width = 22
+vmap = True
+reversed = False
+_font = b'\x00\x00'
+_index = b'\x00\x00\x23\x00\'
 
+from uctypes import addressof
+
+def _chr_addr(ordch):
+    # use _index to return the offset into _font
+
+def get_ch(ch):
+    # validate ch, if out of range use '?'
+    # get offset into _font and retrieve char width
+    # Return address of start of bitmap, height and width
+    return addressof(_font) + offset + 2, height, width
 ```
+
+``height`` and ``width`` are specified in bits (pixels).
+
+Note that the module global ``width`` is relevant only to files created as
+fixed pitch. It is provided for information only, and will be zero for variable
+pitch fonts. This enbles such fonts to be identified at runtime.
 
 ## Mapping
 
@@ -182,10 +172,6 @@ the case of proportional fonts, at a small cost in performance. The size of the
 Python source file is a lesser consideration, with readability being prioritised
 over size. Hence they will be "pretty printed" with the large bytes objects
 split over multiple lines for readability.
-
-The ``get_ch`` method will determine the character width from the difference
-between current and next index values and the font's vertical size: it does not
-require explicit storage.
 
 This general approach has been tested on a Pyboard connected to LCD hardware
 having an onboard frame buffer. The visual performance is good.
