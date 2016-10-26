@@ -47,22 +47,23 @@ target display hardware. Their usage should be defined in the documentation for
 the device driver.
 
 Example usage to produce a file ``myfont.py`` with height of 23 pixels:  
-``font_to_py.py FreeSans.ttf 23 -o myfont.py``
+``font_to_py.py FreeSans.ttf 23 myfont.py``
 
 ## Arguments
 
-### Mandatory arguments:
+### Mandatory positional arguments:
 
  1. Font file path. Must be a ttf or otf file.
  2. Height in pixels.
- 3. -o or --outfile Output file path. Must have a .py extension.
+ 3. Output file path. Must have a .py extension.
 
 ### Optional arguments:
 
  * -f or --fixed If specified, all characters will have the same width. By
  default fonts are assumed to be variable pitch.
- * -h Specifies horizontal mapping (default is vertical).
+ * -x Specifies horizontal mapping (default is vertical).
  * -b Specifies bit reversal in each font byte.
+ * -t Specifies test mode: output file suitable for cPython test programs only.
 
 Optional arguments other than the fixed pitch argument will be specified in the
 device driver documentation. Bit reversal is required by some display hardware.
@@ -119,6 +120,7 @@ has the following outline definition (in practice the bytes objects are large):
 
 ```python
 version = '0.1'
+test = False
 height = 23
 width = 22
 vmap = True
