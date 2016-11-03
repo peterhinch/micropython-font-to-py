@@ -88,6 +88,48 @@ import myfont
 The ``myfont`` module name will then be passed to the device driver to render
 strings on demand.
 
+# Test Results: RAM utilisation
+
+A font file was created, frozen as bytecode and deployed to a version 1.0
+Pyboard. The font was saved as variable pitch with a height of 19 pixels. The
+following code was then pasted at the REPL:
+
+```python
+import gc, micropython
+gc.collect()
+micropython.mem_info()
+
+from uctypes import bytearray_at
+import freeserif
+
+gc.collect()
+micropython.mem_info()
+
+def foo():
+    addr, height, width = freeserif.get_ch('a')
+    arr = bytearray_at(addr, 3*2)
+
+foo()
+
+gc.collect()
+micropython.mem_info()
+print(len(freeserif._font) + len(freeserif._index))
+```
+
+The memory used was 4416, 4704, and 4736 bytes. As increments over the initial
+state this corresponds to 288 and 320 bytes. The ``print`` statement shows the
+RAM which would be consumed by the data arrays: this was 3271 bytes.
+
+The ``foo()`` function emulates the behaviour of a device driver in rendering a
+character to a display. The local variables constitute memory which will be
+reclaimed on exit from the function. Its additional RAM use was 32 bytes.
+
+## Conclusion
+
+With a font of height 19 pixels RAM saving was an order of magnitude. The
+saving will be greater if larger fonts are used
+
+
 # Dependencies, links and licence
 
 The code is released under the MIT licence. It requires Python 3.2 or later.
@@ -158,9 +200,9 @@ b'\x1b\x01\x35\x01\x4f\x01\x75\x01\x9e\x01\xb2\x01\xcc\x01\xe0\x01'\
 
 def get_ch(ch):
     # validate ch, if out of range use '?'
-    # get offset into _font and retrieve char width
+    # get offsets into _font and retrieve char width
     # Return: address of start of bitmap, height and width
-    return addressof(_font) + offset + 2, height, width
+    return memoryview(_font[offset + 2, next_offset]), height, width
 ```
 
 ``height`` and ``width`` are specified in bits (pixels).
@@ -172,9 +214,7 @@ will fit the available space. If it will fit on the assumption that all chars
 are maximum width, it can be rendered rapidly without doing a character by
 character check.
 
-There is a small amount of additional code designed to enable font files to be
-tested under cPython: in this instance ``get_ch()`` is called with an optional
-``test`` argument and returns a slice rather than a machine address.
+``get_ch()`` returns a memoryview of an individual glyph with its dimensions.
 
 ## Mapping
 
