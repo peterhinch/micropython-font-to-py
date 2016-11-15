@@ -325,25 +325,19 @@ version = '0.1'
 """
 
 STR02 = """
-try:
-    from uctypes import addressof
-except ImportError:
-    pass
 
 def _chr_addr(ordch):
     offset = 2 * (ordch - 32)
     return int.from_bytes(_index[offset:offset + 2], 'little')
 
-def get_ch(ch, test=False):
+def get_ch(ch):
     ordch = ord(ch)
     ordch = ordch if ordch >= 32 and ordch <= 126 else ord('?')
     offset = _chr_addr(ordch)
     width = int.from_bytes(_font[offset:offset + 2], 'little')
-    if test:
-        next_offs = _chr_addr(ordch +1)
-        return _font[offset + 2:next_offs], {}, width
-    return addressof(_font) + offset + 2, {}, width
-
+    next_offs = _chr_addr(ordch +1)
+    return memoryview(_font[offset + 2:next_offs]), {}, width
+ 
 """
 
 def write_func(stream, name, arg):
