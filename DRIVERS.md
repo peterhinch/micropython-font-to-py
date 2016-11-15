@@ -165,7 +165,7 @@ b'\x1b\x01\x35\x01\x4f\x01\x75\x01\x9e\x01\xb2\x01\xcc\x01\xe0\x01'\
 def get_ch(ch):
     # validate ch, if out of range use '?'
     # get offsets into _font and retrieve char width
-    # Return: address of start of bitmap, height and width
+    # Return: memoryview of bitmap, height and width
     return memoryview(_font[offset + 2, next_offset]), height, width
 ```
 
@@ -187,8 +187,8 @@ space.
 A character occupies a space where (0, 0) represents the coordinates of the top
 left hand corner of the bitmap. It comprises a set of pixels where increasing x
 values represent locations to the right of the origin and increasing y values
-represent downward positions. Mapping is the process whereby this two
-dimensional array of bits is transformed into a linear sequence of bytes.
+represent downward positions. Mapping defines the relationship between this
+abstract two dimensional array of bits and the physical linear sequence of bytes.
 
 Vertical mapping means that the LSB of first byte is pixel (0,0), MSB of first
 byte is (0, 7). The second byte (assuming the height is greater than 8 pixels)
