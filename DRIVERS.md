@@ -58,6 +58,12 @@ of characters is maintained regardless of the font in use.
  1. ``printstring`` Arg: a text string. Outputs a text string at the current
  insertion point. Newline characters are honoured.
 
+## Note on the Writer class
+
+This is more a proof of concept than a final implementation. Obvious
+enhancements include rendering to a rectangular area, support for proper word
+wrap and support for format control characters such as tabs.
+
 # Device Driver Implementation
 
 Display devices comprise two varieties, depending on whether the framebuffer is
@@ -65,7 +71,8 @@ located on the controlling system or on the physical display device. In the
 former case the ``Writer`` class simplifies the design of the driver. It merely
 has to expose certin attributes and methods with ``Writer`` instances taking
 care of text rendering. It is strongly recommended that such device drivers use
-the oficial ``framebuf`` module, as per the official SSD1306 driver.
+the oficial ``framebuf`` module, as per the official SSD1306 driver which
+exposes the required components.
 
 Where the buffer is located on the display device the means of controlling the
 text insertion point will be device dependent. The driver will need to
@@ -104,26 +111,21 @@ buffer/device.
 Each font file has a ``get_ch()`` function accepting an ASCII character as its
 argument. It returns a memoryview instance providing access to a bytearray
 corresponding to the individual glyph. The layout of this data is determined by
-the command line arguments presented to the ``font_to_py.py`` utility. The
-driver documentation should specify these to ensure the layout is optimal to
-simplify and speed transfer to the device. Mapping may be horizontal or
-vertical, and the bit order of individual bytes may be defined. These are
-detailed below.
+the command line arguments presented to the ``font_to_py.py`` utility. It is
+the responsibility of the driver to copy that data to the physical device.
 
-The Python source file provides a fast means of accessing the byte data
-corresponding to an individual character. It is the responsibility of the
-driver to copy that data to the physical device. The ``font_to_py.py``
-utility has command line arguments specifying the organisation of data returned
-by the font's ``get_ch()`` function.
+The purpose of the ``font_to_py.py`` command line arguments specified to the
+user is to ensure that the data layout is optimised for the device so that this
+copy operation is a fast bytewise copy or SPI/I2C transfer. The driver
+documentation should therefore specify these arguments to ensure the layout is
+optimal. Mapping may be horizontal or vertical, and the bit order of individual
+bytes may be defined. These are detailed below.
 
-The purpose of the command line arguments specified to the user is to
-ensure that the data layout is optimised for the device so that the copy is a
-simple bytewise copy or SPI/I2C transfer.
-
-In the case of devices with their own frame buffer the Writer class will need
+In the case of devices with their own frame buffer the ``Writer`` class will need
 to be re-written or adapted to match the hardware's method of tracking such
-things as the text insertion point. Consider maintaining the class's interface
-to simplify the writing of user code capable of being ported between displays.
+things as the text insertion point. Consideration should be given to employing
+the same interface as the ``Writer`` class to simplify the porting of user code
+between displays with differing hardware.
 
 ## Font files
 

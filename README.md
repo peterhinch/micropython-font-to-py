@@ -35,14 +35,14 @@ This consists of three components:
  2. The Writer class (writer.py) This facilitates writing text to a device
  given a suitably designed device driver. See [here](./DRIVERS.md).
  3. A device driver specification. This includes an example for rendering text
- to an SSD1306 device with arbitrary fonts. See [here](./DRIVERS.md).
+ to an SSD1306 device with arbitrary fonts. Also described in the above reference.
 
 # font_to_py.py
 
 This is a command line utility written in Python 3 to be run on a PC. It takes
-as input a font file in ttf or otf form and a height and outputs a Python
-source file containing the font data. Fixed and variable pitch rendering are
-supported. The design has the following aims:
+as input a font file in ``ttf`` or ``otf`` form together with a height in pixels
+and outputs a Python source file containing the font data. Fixed and variable
+pitch rendering are supported. The design has the following aims:
 
  * Independence of specific display hardware.
  * The path from font file to Python code to be fully open source.
