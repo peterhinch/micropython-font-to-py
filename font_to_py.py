@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 # Needs freetype-py>=1.0
 
+# Implements multi-pass solution to setting an exact font height
+
 # Some code adapted from Daniel Bader's work at the following URL
 # http://dbader.org/blog/monochrome-font-rendering-with-freetype-and-python
 
@@ -258,25 +260,40 @@ class Font(dict):
     def __init__(self, filename, size, monospaced=False):
         super().__init__()
         self._face = freetype.Face(filename)
-        self._face.set_pixel_sizes(0, size)
-        self._max_descent = 0
-
-        # For each character in the charset string we get the glyph
-        # and update the overall dimensions of the resulting bitmap.
-        self.max_width = 0
-        max_ascent = 0
-        for char in self.charset:
-            glyph = self._glyph_for_character(char)
-            max_ascent = max(max_ascent, int(glyph.ascent))
-            self._max_descent = max(self._max_descent, int(glyph.descent))
-            # for a few chars e.g. _ glyph.width > glyph.advance_width
-            self.max_width = int(max(self.max_width, glyph.advance_width,
-                                     glyph.width))
-
-        self.height = max_ascent + self._max_descent
+        self.max_width = self.get_dimensions(size)
         self.width = self.max_width if monospaced else 0
-        for char in self.charset:
+        for char in self.charset:  # Populate dictionary
             self._render_char(char)
+
+    # n-pass solution to setting a precise height.
+    def get_dimensions(self, required_height):
+        error = 0
+        height = required_height
+        for npass in range(10):
+            height += error
+            self._face.set_pixel_sizes(0, height)
+            max_descent = 0
+
+            # For each character in the charset string we get the glyph
+            # and update the overall dimensions of the resulting bitmap.
+            max_width = 0
+            max_ascent = 0
+            for char in self.charset:
+                glyph = self._glyph_for_character(char)
+                max_ascent = max(max_ascent, int(glyph.ascent))
+                max_descent = max(max_descent, int(glyph.descent))
+                # for a few chars e.g. _ glyph.width > glyph.advance_width
+                max_width = int(max(max_width, glyph.advance_width,
+                                        glyph.width))
+
+            error = required_height - (max_ascent + max_descent)
+            if error == 0:
+                break
+        print('Height set in {} passes'.format(npass))
+        self.height = max_ascent + max_descent
+        self._max_descent = max_descent
+        return max_width
+
 
     def _glyph_for_character(self, char):
         # Let FreeType load the glyph for the given character and tell it to
@@ -287,20 +304,18 @@ class Font(dict):
 
     def _render_char(self, char):
         glyph = self._glyph_for_character(char)
-        if self.width:  # Monospaced
-            width = self.width
-        else:
-            width = int(max(glyph.width, glyph.advance_width))
+        char_width = int(max(glyph.width, glyph.advance_width))  # Actual width
+        width = self.width if self.width else char_width  # Space required if monospaced
         outbuffer = Bitmap(width, self.height)
 
         # The vertical drawing position should place the glyph
         # on the baseline as intended.
         row = self.height - int(glyph.ascent) - self._max_descent
         outbuffer.bitblt(glyph.bitmap, row)
-        self[char] = [outbuffer, width]
+        self[char] = [outbuffer, width, char_width]
 
     def stream_char(self, char, hmap, reverse):
-        outbuffer, _ = self[char]
+        outbuffer, _, _ = self[char]
         if hmap:
             gen = outbuffer.get_hbyte(reverse)
         else:
@@ -316,6 +331,14 @@ class Font(dict):
             data += bytearray(self.stream_char(char, hmap, reverse))
             index += (len(data)).to_bytes(2, byteorder='little')
         return data, index
+
+    def build_binary_array(self, hmap, reverse):
+        data = bytearray((0x3f, 0xe7, self.max_width, self.height))
+        for char in self.charset:
+            width = self[char][2]
+            data += bytes((width,))
+            data += bytearray(self.stream_char(char, hmap, reverse))
+        return data
 
 # PYTHON FILE WRITING
 
@@ -377,6 +400,22 @@ def write_data(stream, fnt, font_path, monospaced, hmap, reverse):
     bw_index.eot()
     stream.write(STR02.format(height, height))
 
+# BINARY OUTPUT
+
+def write_binary_font(op_path, font_path, height, hmap, reverse):
+    try:
+        fnt = Font(font_path, height, True)  # All chars have same width
+    except freetype.ft_errors.FT_Exception:
+        print("Can't open", font_path)
+        return False
+    try:
+        with open(op_path, 'wb') as stream:
+            data = fnt.build_binary_array(hmap, reverse)
+            stream.write(data)
+    except OSError:
+        print("Can't open", op_path, 'for writing')
+        return False
+    return True
 
 # PARSE COMMAND LINE ARGUMENTS
 
@@ -412,10 +451,13 @@ if __name__ == "__main__":
     if not os.path.splitext(args.infile)[1].upper() in ('.TTF', '.OTF'):
         print("Font file should be a ttf or otf file.")
         sys.exit(1)
-    if not os.path.splitext(args.outfile)[1].upper() == '.PY':
-        print("Output filename should have a .py extension.")
-        sys.exit(1)
-    if not write_font(args.outfile, args.infile, args.height, args.fixed,
-                      args.xmap, args.reverse):
-        sys.exit(1)
+    if os.path.splitext(args.outfile)[1].upper() == '.PY':  # Emit Python
+        if not write_font(args.outfile, args.infile, args.height, args.fixed,
+                          args.xmap, args.reverse):
+            sys.exit(1)
+    else:
+        print('WARNING: output filename lacks .py extension. Writing binary font file.')
+        if not write_binary_font(args.outfile, args.infile, args.height,
+                                 args.xmap, args.reverse):
+            sys.exit(1)
     print(args.outfile, 'written successfully.')

@@ -23,7 +23,8 @@ Example usage to produce a file ``myfont.py`` with height of 23 pixels:
 
  1. Font file path. Must be a ttf or otf file.
  2. Height in pixels.
- 3. Output file path. Must have a .py extension.
+ 3. Output file path. Must have a .py extension otherwise a binary font file
+ will be created; in this instance a warning message is output.
 
 ### Optional arguments:
 
@@ -48,6 +49,16 @@ The ``myfont`` module name will then be used to instantiate a ``Writer`` object
 to render strings on demand. A practical example may be studied
 [here](https://github.com/peterhinch/micropython-samples/blob/master/SSD1306/ssd1306_test.py).
 The detailed layout of the Python file may be seen [here](./DRIVERS.md).
+
+### Binary font files
+
+If the output filename does not have a ``.py`` extension a binary font file is
+created. This is primarily intended for the e-paper driver. Specifically in
+applications where the file is to be stored on the display's internal flash
+memory rather than using frozen Python modules.
+
+The technique of accessing character data from a random access file is only
+applicable to devices such as e-paper where the update time is slow.
 
 # Dependencies, links and licence
 
