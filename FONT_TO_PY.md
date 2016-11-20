@@ -24,7 +24,7 @@ Example usage to produce a file ``myfont.py`` with height of 23 pixels:
  1. Font file path. Must be a ttf or otf file.
  2. Height in pixels.
  3. Output file path. Must have a .py extension otherwise a binary font file
- will be created; in this instance a warning message is output.
+ will be created.
 
 ### Optional arguments:
 
@@ -35,6 +35,15 @@ Example usage to produce a file ``myfont.py`` with height of 23 pixels:
 
 Optional arguments other than the fixed pitch argument will be specified in the
 device driver documentation. Bit reversal is required by some display hardware.
+
+### Output
+
+The specified height is a target. The algorithm gets as close to the target
+height as possible (usually within one pixel). The actual height achieved is
+displayed on completion.
+
+A warning is output if the output filename does not have a .py extension as the
+creation of a binary font file may not be intended.
 
 ## The font file
 

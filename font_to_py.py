@@ -280,18 +280,19 @@ class Font(dict):
             max_ascent = 0
             for char in self.charset:
                 glyph = self._glyph_for_character(char)
-                max_ascent = max(max_ascent, int(glyph.ascent))
-                max_descent = max(max_descent, int(glyph.descent))
+                max_ascent = max(max_ascent, glyph.ascent)
+                max_descent = max(max_descent, glyph.descent)
                 # for a few chars e.g. _ glyph.width > glyph.advance_width
                 max_width = int(max(max_width, glyph.advance_width,
                                         glyph.width))
 
-            error = required_height - (max_ascent + max_descent)
-            if error == 0:
+            new_error = required_height - (max_ascent + max_descent)
+            if (new_error == 0) or (abs(new_error) - abs(error) == 0):
                 break
-        print('Height set in {} passes'.format(npass))
-        self.height = max_ascent + max_descent
-        self._max_descent = max_descent
+            error = new_error
+        self.height = int(max_ascent + max_descent)
+        print('Height set in {} passes. Actual height {} pixels'.format(npass + 1, self.height))
+        self._max_descent = int(max_descent)
         return max_width
 
 
@@ -332,8 +333,8 @@ class Font(dict):
             index += (len(data)).to_bytes(2, byteorder='little')
         return data, index
 
-    def build_binary_array(self, hmap, reverse):
-        data = bytearray((0x3f, 0xe7, self.max_width, self.height))
+    def build_binary_array(self, hmap, reverse, sig):
+        data = bytearray((0x3f + sig, 0xe7, self.max_width, self.height))
         for char in self.charset:
             width = self[char][2]
             data += bytes((width,))
@@ -401,16 +402,23 @@ def write_data(stream, fnt, font_path, monospaced, hmap, reverse):
     stream.write(STR02.format(height, height))
 
 # BINARY OUTPUT
-
+# hmap reverse magic bytes
+# 0    0       0x3f 0xe7
+# 1    0       0x40 0xe7
+# 0    1       0x41 0xe7
+# 1    1       0x42 0xe7
 def write_binary_font(op_path, font_path, height, hmap, reverse):
     try:
         fnt = Font(font_path, height, True)  # All chars have same width
     except freetype.ft_errors.FT_Exception:
         print("Can't open", font_path)
         return False
+    sig = 1 if hmap else 0
+    if reverse:
+        sig += 2
     try:
         with open(op_path, 'wb') as stream:
-            data = fnt.build_binary_array(hmap, reverse)
+            data = fnt.build_binary_array(hmap, reverse, sig)
             stream.write(data)
     except OSError:
         print("Can't open", op_path, 'for writing')
