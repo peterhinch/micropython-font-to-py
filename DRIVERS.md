@@ -168,13 +168,14 @@ _index =\
 b'\x00\x00\x14\x00\x2e\x00\x4b\x00\x71\x00\x97\x00\xd2\x00\x0a\x01'\
 b'\x1b\x01\x35\x01\x4f\x01\x75\x01\x9e\x01\xb2\x01\xcc\x01\xe0\x01'\
 
+_mvfont = memoryview(_font)
     # Boilerplate code omitted
 
 def get_ch(ch):
     # validate ch, if out of range use '?'
     # get offsets into _font and retrieve char width
     # Return: memoryview of bitmap, height and width
-    return memoryview(_font[offset + 2, next_offset]), height, width
+    return mvfont[offset + 2, next_offset], height, width
 ```
 
 ``height`` and ``width`` are specified in bits (pixels).
