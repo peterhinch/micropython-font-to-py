@@ -43,12 +43,6 @@ The ``Writer`` class exposes the following class methods:
  the physical display. If ``col_clip`` is ``False`` characters will wrap onto
  the next line. If ``row_clip`` is ``False`` the display will, where necessary,
  scroll up to ensure the line is rendered.
- 3. ``mapping`` Arg: an integer. This defines the mapping of bytes in the
- buffer onto pixels. The module exposes three constants for use here: ``VERT``
- ``HORIZ`` and ``WEIRD``, the latter being specific to the official SSD1306
- driver. ``VERT`` is for true vertically mapped displays. ``HORIZ``, for
- horizontally mapped devices, is currently unsupported. By default the mapping
- is for SSD1306 devices using the official driver.
 
 As class methods these settings apply to all font objects. The insertion point
 of characters is maintained regardless of the font in use.

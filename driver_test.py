@@ -31,7 +31,7 @@
 import machine
 import utime
 from writer import Writer
-from ssd1306_drv import SSD1306_I2C, SSD1306_SPI  # Until official module is fixed
+from ssd1306 import SSD1306_I2C, SSD1306_SPI
 import freeserif
 import freesans20
 import inconsolata16
