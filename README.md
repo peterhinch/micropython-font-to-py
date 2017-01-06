@@ -65,6 +65,25 @@ Converting font files programmatically works best for larger fonts. For small
 fonts, like the 8*8 default used by the SSD1306 driver, it is best to use
 binary font files: these are hand designed for rendering at a specific size.
 
+# Font file interface
+
+A font file is imported in the usual way e.g. ``import font14``. It contains
+the following methods which return values defined by the arguments which were
+provided to font-to-py:
+
+``height`` Returns height in pixels.  
+``max_width`` Returns maximum width of a glyph in pixels.  
+``hmap`` Returns ``True`` if font is horizontally mapped. Should return ``True``  
+``reverse`` Returns ``True`` if bit reversal was specified. Should return ``False``  
+``monospaced`` Returns ``True`` if monospaced rendering was specified.  
+
+Glyphs are returned with the ``get_ch`` method. Its argument is a character
+and it returns the following values:
+
+ * A ``memoryview`` object containg the glyph bytes.
+ * The height in pixels.
+ * The character width in pixels.
+
 # Licence
 
 All code is released under the MIT licence.
