@@ -10,6 +10,10 @@ required height in pixels and outputs a Python 3 source file. The pixel layout
 is determined by command arguments. By default fonts are stored in variable
 pitch form. This may be overidden by a command line argument.
 
+By default the ASCII character set (ordinal values 32 to 126 inclusive) is
+supported. Command line arguments can modify this range as required, if
+necessary to include extended ASCII characters up to 255.
+
 Further arguments ensure that the byte contents and layout are correct for the
 target display hardware. Their usage should be specified in the documentation
 for the device driver.
@@ -23,24 +27,28 @@ Example usage to produce a file ``myfont.py`` with height of 23 pixels:
 
  1. Font file path. Must be a ttf or otf file.
  2. Height in pixels.
- 3. Output file path. Must have a .py extension otherwise a binary font file
- will be created.
+ 3. Output file path. Filename must have a .py extension.
 
 ### Optional arguments:
 
  * -f or --fixed If specified, all characters will have the same width. By
  default fonts are assumed to be variable pitch.
- * -x Specifies horizontal mapping (default is vertical).
- * -b Specifies bit reversal in each font byte.
+ * -x or --xmap Specifies horizontal mapping (default is vertical).
+ * -r or --reverse Specifies bit reversal in each font byte.
+ * -s or --smallest Ordinal value of smallest character to be stored. Default
+ 32 (ASCII space).
+ * -l or --largest Ordinal value of largest character to be stored. Default 126.
+ * -e or --errchar Ordinal value of character to be rendered if an attempt is
+ made to display an out-of-range character. Default 63 (ASCII "?").
 
-Optional arguments other than the fixed pitch argument will be specified in the
-device driver documentation. Bit reversal is required by some display hardware.
+Any requirement for arguments -xr will be specified in the device driver
+documentation. Bit reversal is required by some display hardware.
 
 ### Output
 
 The specified height is a target. The algorithm gets as close to the target
 height as possible (usually within one pixel). The actual height achieved is
-displayed on completion.
+displayed on completion, along with the width of the widest character.
 
 A warning is output if the output filename does not have a .py extension as the
 creation of a binary font file may not be intended.
@@ -61,13 +69,23 @@ The detailed layout of the Python file may be seen [here](./DRIVERS.md).
 
 ### Binary font files
 
-If the output filename does not have a ``.py`` extension a binary font file is
-created. This is primarily intended for the e-paper driver. Specifically in
-applications where the file is to be stored on the display's internal flash
+There is an option to create a binary font file, specified with a ``-b`` or
+``--binary`` command line argument. In this instance the output filename must
+not have a ``.py`` extension. This is primarily intended for the e-paper driver
+in applications where the file is to be stored on the display's internal flash
 memory rather than using frozen Python modules.
 
-The technique of accessing character data from a random access file is only
-applicable to devices such as e-paper where the update time is slow.
+The technique of accessing character data from a random access file is slow
+and thus probably only applicable to devices such as e-paper where the update
+time is slow.
+
+Binary files currently support only the standard ASCII character set. There is
+no error character: the device driver must ensure that seeks are within range.
+Consequently the following arguments are invalid:
+
+ * -s or --smallest
+ * -l or --largest
+ * -e or --errchar
 
 # Dependencies, links and licence
 

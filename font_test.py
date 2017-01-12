@@ -153,10 +153,10 @@ def test_font(fontfile, string):
 
 # Create font file, render a string to REPL using it
 # usage font_test.test_file('FreeSans.ttf', 20, 'xyz')
-def test_file(fontfile, height, string, fixed=False, hmap=False,
-              reverse=False):
+def test_file(fontfile, height, string, *, minchar=32, maxchar=126, defchar=ord('?'),
+              fixed=False, hmap=False, reverse=False):
     if not write_font('myfont.py', fontfile, height, fixed,
-                      hmap, reverse):
+                      hmap, reverse, minchar, maxchar, defchar):
         print('Failed to create font file.')
         return
 
