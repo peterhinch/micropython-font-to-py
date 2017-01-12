@@ -255,10 +255,13 @@ class Glyph(object):
 # height (in pixels) of all characters
 # width (in pixels) for monospaced output (advance width of widest char)
 class Font(dict):
-    def __init__(self, filename, size, minchar=32, maxchar=126, monospaced=False, defchar=ord('?')):
+    def __init__(self, filename, size, minchar, maxchar, monospaced, defchar):
         super().__init__()
         self._face = freetype.Face(filename)
-        self.charset = [chr(defchar)] + [chr(char) for char in range(minchar, maxchar + 1)]
+        if defchar is None: # Binary font
+            self.charset = [chr(char) for char in range(minchar, maxchar + 1)]
+        else:
+            self.charset = [chr(defchar)] + [chr(char) for char in range(minchar, maxchar + 1)]
         self.max_width = self.get_dimensions(size)
         self.width = self.max_width if monospaced else 0
         for char in self.charset:  # Populate dictionary
@@ -412,7 +415,7 @@ def write_data(stream, fnt, font_path, monospaced, hmap, reverse, minchar, maxch
 # 1    1       0x42 0xe7
 def write_binary_font(op_path, font_path, height, hmap, reverse):
     try:
-        fnt = Font(font_path, height, True)  # All chars have same width
+        fnt = Font(font_path, height, 32, 126, True, None)  # All chars have same width
     except freetype.ft_errors.FT_Exception:
         print("Can't open", font_path)
         return False
