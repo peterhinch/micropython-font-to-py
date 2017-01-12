@@ -79,7 +79,7 @@ provided to font-to-py:
 ``hmap`` Returns ``True`` if font is horizontally mapped. Should return ``True``  
 ``reverse`` Returns ``True`` if bit reversal was specified. Should return ``False``  
 ``monospaced`` Returns ``True`` if monospaced rendering was specified.  
-``min_ch`` Returns the ordinal value of the lowest character in the file.
+``min_ch`` Returns the ordinal value of the lowest character in the file.  
 ``max_ch`` Returns the ordinal value of the highest character in the file.
 
 Glyphs are returned with the ``get_ch`` method. Its argument is a character
