@@ -498,7 +498,7 @@ if __name__ == "__main__":
         if os.path.splitext(args.outfile)[1].upper() == '.PY':
             quit('Binary file must not have a .py extension.')
 
-        if args.smallest != 32 or args.largest != 126 or args.default != ord('?'):
+        if args.smallest != 32 or args.largest != 126 or args.errchar != ord('?'):
             quit(BINARY)
 
         print('Writing binary font file.')
