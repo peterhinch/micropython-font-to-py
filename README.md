@@ -56,14 +56,17 @@ RAM usage when importing fonts stored as frozen bytecode.
 
 # Limitations
 
-Only the ASCII character set from ``chr(32)`` to ``chr(126)`` is supported.
-Kerning is not supported. Fonts are one bit per pixel. This does not rule out
-colour displays: the device driver can add colour information at the rendering
-stage. It does assume that all pixels of a character are rendered identically.
+By default the ASCII character set from ``chr(32)`` to ``chr(126)`` is supported
+but command line arguments enable the range to be modified with extended ASCII
+characters to ``chr(255)`` being included if required. Kerning is not supported.
+Fonts are one bit per pixel. This does not rule out colour displays: the device
+driver can add colour information at the rendering stage. It does assume that
+all pixels of a character are rendered identically.
 
 Converting font files programmatically works best for larger fonts. For small
 fonts, like the 8*8 default used by the SSD1306 driver, it is best to use
-binary font files: these are hand designed for rendering at a specific size.
+hand-designed binary font files: these are optiised for rendering at a specific
+size.
 
 # Font file interface
 
@@ -76,6 +79,8 @@ provided to font-to-py:
 ``hmap`` Returns ``True`` if font is horizontally mapped. Should return ``True``  
 ``reverse`` Returns ``True`` if bit reversal was specified. Should return ``False``  
 ``monospaced`` Returns ``True`` if monospaced rendering was specified.  
+``min_ch`` Returns the ordinal value of the lowest character in the file.
+``max_ch`` Returns the ordinal value of the highest character in the file.
 
 Glyphs are returned with the ``get_ch`` method. Its argument is a character
 and it returns the following values:
