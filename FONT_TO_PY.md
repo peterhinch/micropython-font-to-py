@@ -114,7 +114,7 @@ gc.collect()
 micropython.mem_info()
 
 def foo():
-    addr, height, width = freeserif.get_ch('a')
+    addr, height, width = freeserif.get_char('a')
 
 foo()
 

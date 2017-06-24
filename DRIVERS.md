@@ -18,9 +18,9 @@ display = Display(args_required_by_driver)
 wri_serif = Writer(display, freeserif)
 wri_sans = Writer(display, freesans20)
 Writer.set_clip(True, True)
-wri_serif.printstring('Tuesday\n')
-wri_sans.printstring('8 Nov 2016\n')
-wri_sans.printstring('10.30am')
+wri_serif.draw_text('Tuesday\n')
+wri_sans.draw_text('8 Nov 2016\n')
+wri_sans.draw_text('10.30am')
 
 display.show()  # Display the result
 ```
@@ -33,10 +33,10 @@ display and a complete example of an SSD1306 driver may be found
 
 The ``Writer`` class exposes the following class methods:
 
- 1. ``set_textpos`` Args: ``row``, ``col``. This determines where on screen any
+ 1. ``set_position`` Args: ``x``, ``y``. This determines where on screen any
  subsequent text is to be rendered. The initial value is (0, 0) - the top left
- corner. Arguments are in pixels with positive values representing down and
- right respectively. They reference the top left hand corner of the first
+ corner. Arguments are in pixels with positive values representing right and
+ down respectively. They reference the top left hand corner of the first
  character to be output.
  2. ``set_clip`` Args: boolean ``row_clip``, ``col_clip``. If these are
  ``True``, characters will be clipped if they extend beyond the boundaries of
@@ -49,7 +49,7 @@ of characters is maintained regardless of the font in use.
 
 ## Method
 
- 1. ``printstring`` Arg: a text string. Outputs a text string at the current
+ 1. ``draw_text`` Arg: a text string. Outputs a text string at the current
  insertion point. Newline characters are honoured.
 
 ## Note on the Writer class
@@ -110,7 +110,7 @@ buffer/device.
 
 ### Specifying the font file
 
-Each font file has a ``get_ch()`` function accepting an ASCII character as its
+Each font file has a ``get_char()`` function accepting an ASCII character as its
 argument. It returns a memoryview instance providing access to a bytearray
 corresponding to the individual glyph. The layout of this data is determined by
 the command line arguments presented to the ``font_to_py.py`` utility. It is
@@ -171,7 +171,7 @@ b'\x1b\x01\x35\x01\x4f\x01\x75\x01\x9e\x01\xb2\x01\xcc\x01\xe0\x01'\
 _mvfont = memoryview(_font)
     # Boilerplate code omitted
 
-def get_ch(ch):
+def get_char(ch):
     # validate ch, if out of range use '?'
     # get offsets into _font and retrieve char width
     # Return: memoryview of bitmap, height and width
@@ -187,7 +187,7 @@ will fit the available space. If it will fit on the assumption that all chars
 are maximum width, it can be rendered rapidly without doing a character by
 character check.
 
-``get_ch()`` returns a memoryview of an individual glyph with its dimensions
+``get_char()`` returns a memoryview of an individual glyph with its dimensions
 and contains all the bytes required to render the character including trailing
 space.
 

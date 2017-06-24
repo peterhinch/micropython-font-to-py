@@ -71,9 +71,9 @@ else:  # I2C
 serif = Writer(display, freeserif)
 sans = Writer(display, freesans20)
 Writer.set_clip(True, True)  # Disable auto scrolling and wrapping.
-serif.printstring('Tuesday\n')
-sans.printstring('8 Nov 2016\n')
-sans.printstring('10.30am')
+serif.draw_text('Tuesday\n')
+sans.draw_text('8 Nov 2016\n')
+sans.draw_text('10.30am')
 display.show()
 
 

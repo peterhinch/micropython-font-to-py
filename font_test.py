@@ -143,7 +143,7 @@ def test_font(fontfile, string):
     height = myfont.height()
     for row in range(height):
         for char in string:
-            data, _, width = myfont.get_ch(char)
+            data, _, width = myfont.get_char(char)
             if myfont.hmap():
                 render_row_hmap(data, row, height, width, myfont.reverse())
             else:
@@ -167,7 +167,7 @@ def test_file(fontfile, height, string, *, minchar=32, maxchar=126, defchar=ord(
     height = myfont.height()
     for row in range(height):
         for char in string:
-            data, _, width = myfont.get_ch(char)
+            data, _, width = myfont.get_char(char)
             if myfont.hmap():
                 render_row_hmap(data, row, height, width, myfont.reverse())
             else:

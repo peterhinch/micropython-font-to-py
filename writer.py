@@ -29,71 +29,128 @@
 
 
 class Writer(object):
-    text_row = 0        # attributes common to all Writer instances
-    text_col = 0
-    row_clip = False    # Clip or scroll when screen full
-    col_clip = False    # Clip or new line when row is full
+    # these attributes and set_position are common to all Writer instances
+    x_pos = 0
+    y_pos = 0
+    device = None
+    screen_height = 0
+    screen_width = 0
+    draw_pixel = None
 
     @classmethod
-    def set_textpos(cls, row, col):
-        cls.text_row = row
-        cls.text_col = col
+    def set_position(cls, x, y):
+        cls.x_pos = x
+        cls.y_pos = y
 
-    @classmethod
-    def set_clip(cls, row_clip, col_clip):
-        cls.row_clip = row_clip
-        cls.col_clip = col_clip
-
-    def __init__(self, device, font):
+    def __init__(self, device, font, rotation=None):
         super().__init__()
         self.device = device
+        self.set_font(font)
+        self.set_rotation(rotation)
+
+    def set_font(self, font):
         self.font = font
+        self._draw_char = self._draw_vmap_char
         if font.hmap():
-            raise OSError('Font must be vertically mapped')
-        self.screenwidth = device.width  # In pixels
-        self.screenheight = device.height
+            self._draw_char = self._draw_hmap_char
+
+    @classmethod
+    def set_rotation(cls, rotation=None):
+        rotation = 0 if not rotation else rotation % 360
+        if not rotation:
+            cls.draw_pixel = cls._draw_pixel
+        elif rotation == 90:
+            cls.draw_pixel = cls._draw_pixel_90
+        elif rotation == 180:
+            cls.draw_pixel = cls._draw_pixel_180
+        elif rotation == 270:
+            cls.draw_pixel = cls._draw_pixel_270
+        else:
+            raise ValueError('rotation must be falsy or one of 90, 180 or 270')
+
+        if not rotation or rotation == 180:
+            cls.screen_width = cls.device.width
+            cls.screen_height = cls.device.height
+        else:
+            cls.screen_width = cls.device.height
+            cls.screen_height = cls.device.width
+
+    def _draw_pixel(self, x, y, color):
+        self.device.pixel(x, y, color)
+
+    def _draw_pixel_90(self, x, y, color):
+        self.device.pixel(self.device.width - y, x, color)
+
+    def _draw_pixel_180(self, x, y, color):
+        self.device.pixel(self.device.width - x, self.device.height - y, color)
+
+    def _draw_pixel_270(self, x, y, color):
+        self.device.pixel(y, self.device.height - x, color)
 
     def _newline(self):
-        height = self.font.height()
-        Writer.text_row += height
-        Writer.text_col = 0
-        margin = self.screenheight - (Writer.text_row + height)
-        if margin < 0:
-            if not Writer.row_clip:
-                self.device.scroll(0, margin)
-                Writer.text_row += margin
+        Writer.x_pos = 0
+        Writer.y_pos += self.font.height()
 
-    def printstring(self, string):
+    def draw_text(self, string):
         for char in string:
-            self._printchar(char)
+            self._draw_char(char)
 
-    def _printchar(self, char):
+    def _draw_hmap_char(self, char):
         if char == '\n':
             self._newline()
             return
-        glyph, char_height, char_width = self.font.get_ch(char)
-        if Writer.text_row + char_height > self.screenheight:
-            if Writer.row_clip:
-                return
+
+        glyph, char_height, char_width = self.font.get_char(char)
+
+        if Writer.x_pos + char_width > self.screen_width:
             self._newline()
-        if Writer.text_col + char_width > self.screenwidth:
-            if Writer.col_clip:
-                return
-            else:
-                self._newline()
+
+        div, mod = divmod(char_width, 8)
+        bytes_per_row = div + 1 if mod else div
+
+        for glyph_row_i in range(char_height):
+            glyph_row_start = glyph_row_i * bytes_per_row
+            glyph_row = int.from_bytes(
+                glyph[glyph_row_start:glyph_row_start + bytes_per_row],
+                'little'
+            )
+            if not glyph_row:
+                continue
+            x = Writer.x_pos
+            y = Writer.y_pos + glyph_row_i
+            for glyph_col_i in range(char_width):
+                if glyph_row & (1 << glyph_col_i):
+                    self.draw_pixel(x, y, 1)
+                x += 1
+
+        Writer.x_pos += char_width
+
+    def _draw_vmap_char(self, char):
+        if char == '\n':
+            self._newline()
+            return
+
+        glyph, char_height, char_width = self.font.get_char(char)
+
+        if Writer.x_pos + char_width > self.screen_width:
+            self._newline()
 
         div, mod = divmod(char_height, 8)
-        gbytes = div + 1 if mod else div    # No. of bytes per column of glyph
-        device = self.device
-        for scol in range(char_width):      # Source column
-            dcol = scol + Writer.text_col   # Destination column
-            drow = Writer.text_row          # Destination row
-            for srow in range(char_height): # Source row
-                gbyte, gbit = divmod(srow, 8)
-                if drow >= self.screenheight:
-                    break
-                if gbit == 0:               # Next glyph byte
-                    data = glyph[scol * gbytes + gbyte]
-                device.pixel(dcol, drow, data & (1 << gbit))
-                drow += 1
-        Writer.text_col += char_width
+        bytes_per_col = div + 1 if mod else div
+
+        for glyph_col_i in range(char_width):
+            glyph_col_start = glyph_col_i * bytes_per_col
+            glyph_col = int.from_bytes(
+                glyph[glyph_col_start:glyph_col_start + bytes_per_col],
+                'little'
+            )
+            if not glyph_col:
+                continue
+            x = Writer.x_pos + glyph_col_i
+            y = Writer.y_pos
+            for glyph_row_i in range(char_height):
+                if glyph_col & (1 << glyph_row_i):
+                    self.draw_pixel(x, y, 1)
+                y += 1
+
+        Writer.x_pos += char_width
