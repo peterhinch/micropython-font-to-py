@@ -28,64 +28,34 @@
 # same Display object.
 
 
+def from_bytes(data, signed=False):
+    return int.from_bytes(data, 'little', signed)
+
+
 class Writer(object):
     # these attributes and set_position are common to all Writer instances
     x_pos = 0
     y_pos = 0
-    device = None
-    screen_height = 0
-    screen_width = 0
-    draw_pixel = None
 
     @classmethod
     def set_position(cls, x, y):
         cls.x_pos = x
         cls.y_pos = y
 
-    def __init__(self, device, font, rotation=None):
+    def __init__(self, display, font):
         super().__init__()
-        self.device = device
+        self.set_display(display)
         self.set_font(font)
-        self.set_rotation(rotation)
+
+    def set_display(self, display):
+        self.display = display
 
     def set_font(self, font):
         self.font = font
-        self._draw_char = self._draw_vmap_char
-        if font.hmap():
-            self._draw_char = self._draw_hmap_char
-
-    @classmethod
-    def set_rotation(cls, rotation=None):
-        rotation = 0 if not rotation else rotation % 360
-        if not rotation:
-            cls.draw_pixel = cls._draw_pixel
-        elif rotation == 90:
-            cls.draw_pixel = cls._draw_pixel_90
-        elif rotation == 180:
-            cls.draw_pixel = cls._draw_pixel_180
-        elif rotation == 270:
-            cls.draw_pixel = cls._draw_pixel_270
+        if font.lmap():
+            self.draw_char = self._draw_lmap_char
         else:
-            raise ValueError('rotation must be falsy or one of 90, 180 or 270')
-
-        if not rotation or rotation == 180:
-            cls.screen_width = cls.device.width
-            cls.screen_height = cls.device.height
-        else:
-            cls.screen_width = cls.device.height
-            cls.screen_height = cls.device.width
-
-    def _draw_pixel(self, x, y, color):
-        self.device.pixel(x, y, color)
-
-    def _draw_pixel_90(self, x, y, color):
-        self.device.pixel(self.device.width - y, x, color)
-
-    def _draw_pixel_180(self, x, y, color):
-        self.device.pixel(self.device.width - x, self.device.height - y, color)
-
-    def _draw_pixel_270(self, x, y, color):
-        self.device.pixel(y, self.device.height - x, color)
+            self.draw_char = self._draw_char
 
     def _newline(self):
         Writer.x_pos = 0
@@ -93,64 +63,114 @@ class Writer(object):
 
     def draw_text(self, string):
         for char in string:
-            self._draw_char(char)
+            self.draw_char(char)
 
-    def _draw_hmap_char(self, char):
+    def _draw_char(self, char):
         if char == '\n':
             self._newline()
             return
 
         glyph, char_height, char_width = self.font.get_char(char)
 
-        if Writer.x_pos + char_width > self.screen_width:
+        if Writer.x_pos + char_width > self.display.screen_width:
             self._newline()
 
+        if self.font.hmap():
+            self._draw_hmap_char(glyph, char_height, char_width)
+        else:
+            self._draw_vmap_char(glyph, char_height, char_width)
+
+        Writer.x_pos += char_width
+
+    def _draw_hmap_char(self, glyph, char_height, char_width):
         div, mod = divmod(char_width, 8)
         bytes_per_row = div + 1 if mod else div
 
         for glyph_row_i in range(char_height):
             glyph_row_start = glyph_row_i * bytes_per_row
-            glyph_row = int.from_bytes(
-                glyph[glyph_row_start:glyph_row_start + bytes_per_row],
-                'little'
-            )
+            glyph_row = from_bytes(glyph[glyph_row_start:glyph_row_start + bytes_per_row])
             if not glyph_row:
                 continue
             x = Writer.x_pos
             y = Writer.y_pos + glyph_row_i
             for glyph_col_i in range(char_width):
                 if glyph_row & (1 << glyph_col_i):
-                    self.draw_pixel(x, y, 1)
+                    self.display.pixel(x, y)
                 x += 1
 
-        Writer.x_pos += char_width
-
-    def _draw_vmap_char(self, char):
-        if char == '\n':
-            self._newline()
-            return
-
-        glyph, char_height, char_width = self.font.get_char(char)
-
-        if Writer.x_pos + char_width > self.screen_width:
-            self._newline()
-
+    def _draw_vmap_char(self, glyph, char_height, char_width):
         div, mod = divmod(char_height, 8)
         bytes_per_col = div + 1 if mod else div
 
         for glyph_col_i in range(char_width):
             glyph_col_start = glyph_col_i * bytes_per_col
-            glyph_col = int.from_bytes(
-                glyph[glyph_col_start:glyph_col_start + bytes_per_col],
-                'little'
-            )
+            glyph_col = from_bytes(glyph[glyph_col_start:glyph_col_start + bytes_per_col])
             if not glyph_col:
                 continue
             x = Writer.x_pos + glyph_col_i
             y = Writer.y_pos
             for glyph_row_i in range(char_height):
                 if glyph_col & (1 << glyph_row_i):
-                    self.draw_pixel(x, y, 1)
+                    self.display.pixel(x, y)
                 y += 1
 
+    def _draw_lmap_char(self, char):
+        if char == '\n':
+            self._newline()
+            return
+
+        is_lhmap, data, char_height, char_width = self.font.get_char(char)
+
+        if Writer.x_pos + char_width > self.display.screen_width:
+            self._newline()
+
+        if is_lhmap:
+            self._draw_lhmap_char(data)
+        else:
+            self._draw_lvmap_char(data)
+
         Writer.x_pos += char_width
+
+    def _draw_lhmap_char(self, data):
+        prev_lines = []
+        y = 0
+        data_i = 0
+        while data_i < len(data):
+            num_lines = data[data_i]
+            if num_lines:
+                prev_lines = []
+                y = Writer.y_pos + data[data_i + 1]
+                for i in range(num_lines):
+                    lstart = data_i + 2 + (i * 2)
+                    x = Writer.x_pos + data[lstart]
+                    length = data[lstart + 1]
+                    prev_lines.append((x, length))
+                    self.display.hline(x, y, length)
+                data_i = lstart + 2
+            else:
+                y += 1
+                for line in prev_lines:
+                    self.display.hline(line[0], y, line[1])
+                data_i += 1
+
+    def _draw_lvmap_char(self, data):
+        prev_lines = []
+        x = 0
+        data_i = 0
+        while data_i < len(data):
+            num_lines = data[data_i]
+            if num_lines:
+                prev_lines = []
+                x = Writer.x_pos + data[data_i + 1]
+                for i in range(num_lines):
+                    lstart = data_i + 2 + (i * 2)
+                    y = Writer.y_pos + data[lstart]
+                    length = data[lstart + 1]
+                    prev_lines.append((y, length))
+                    self.display.vline(x, y, length)
+                data_i = lstart + 2
+            else:
+                x += 1
+                for line in prev_lines:
+                    self.display.vline(x, line[0], line[1])
+                data_i += 1
