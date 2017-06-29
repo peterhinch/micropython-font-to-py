@@ -47,6 +47,18 @@ def validate_vmap(data, height, width):
 
 
 # Routines to render to REPL
+def render_bitmapped_string(myfont, string):
+    height = myfont.height()
+    for row in range(height):
+        for char in string:
+            data, _, width = myfont.get_char(char)
+            if myfont.hmap():
+                render_row_hmap(data, row, height, width, myfont.reverse())
+            else:
+                render_row_vmap(data, row, height, width, myfont.reverse())
+        print()
+
+
 def render_row_hmap(data, row, height, width, reverse):
     validate_hmap(data, height, width)
     bytes_per_row = (width - 1)//8 + 1
@@ -70,6 +82,84 @@ def render_row_vmap(data, row, height, width, reverse):
         else:
             bit = (byte & (1 << (row % 8))) > 0
         char = '#' if bit else '.'
+        print(char, end='')
+
+
+def render_linemapped_string(myfont, string):
+    height = myfont.height()
+    for row in range(height):
+        for char in string:
+            is_lhmap, data, _, width = myfont.get_char(char)
+            if is_lhmap:
+                render_row_lhmap(data, row, height, width)
+            else:
+                render_row_lvmap(data, row, height, width)
+        print()
+
+
+def render_row_lhmap(data, row, height, width):
+    lines = []
+    y = 0
+    data_i = 0
+    while data_i < len(data):
+        num_lines = data[data_i]
+        if num_lines:
+            y = data[data_i + 1]
+            while len(lines) <= y:
+                lines.append([])
+            for i in range(num_lines):
+                lstart = data_i + 2 + (i * 2)
+                x = data[lstart]
+                length = data[lstart + 1]
+                lines[y].append((x, length))
+            data_i = lstart + 2
+        else:
+            lines.append(lines[-1])
+            y += 1
+            data_i += 1
+    while len(lines) < height:
+        lines.append([])
+
+    x = 0
+    for line in lines[row]:
+        while x < line[0]:
+            print('.', end='')
+            x += 1
+        while x < line[0] + line[1]:
+            print('#', end='')
+            x += 1
+    while x < width:
+        print('.', end='')
+        x += 1
+
+
+def render_row_lvmap(data, row, height, width):
+    lines = []
+    x = 0
+    data_i = 0
+    while data_i < len(data):
+        num_lines = data[data_i]
+        if num_lines:
+            lines.append([])
+            x = data[data_i + 1]
+            for i in range(num_lines):
+                lstart = data_i + 2 + (i * 2)
+                y = data[lstart]
+                length = data[lstart + 1]
+                lines[x].append((y, length))
+            data_i = lstart + 2
+        else:
+            lines.append(lines[-1])
+            x += 1
+            data_i += 1
+    while len(lines) < width:
+        lines.append([])
+
+    for x in range(width):
+        char = '.'
+        for line in lines[x]:
+            if line[0] <= row < line[0] + line[1]:
+                char = '#'
         print(char, end='')
 
 
@@ -142,7 +232,10 @@ def test_font(fontfile, string):
         del sys.modules[fontfile]  # force reload
     myfont = import_module(fontfile)
 
-    _display_bitmapped_string(myfont, string)
+    if myfont.lmap():
+        render_linemapped_string(myfont, string)
+    else:
+        render_bitmapped_string(myfont, string)
 
 
 # Create font file, render a string to REPL using it
@@ -161,20 +254,12 @@ def test_file(fontfile, height, string, *, minchar=32, maxchar=126, defchar=ord(
         del sys.modules['myfont']  # force reload
     import myfont
 
-    _display_bitmapped_string(myfont, string)
+    if myfont.lmap():
+        render_linemapped_string(myfont, string)
+    else:
+        render_bitmapped_string(myfont, string)
+
     os.unlink('myfont.py')
-
-
-def _display_bitmapped_string(myfont, string):
-    height = myfont.height()
-    for row in range(height):
-        for char in string:
-            data, _, width = myfont.get_char(char)
-            if myfont.hmap():
-                render_row_hmap(data, row, height, width, myfont.reverse())
-            else:
-                render_row_vmap(data, row, height, width, myfont.reverse())
-        print()
 
 
 if __name__ == '__main__':
