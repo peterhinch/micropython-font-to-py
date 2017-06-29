@@ -148,6 +148,9 @@ def max_width():
 def hmap():
     return False
 
+def lmap():
+    return False
+
 def reverse():
     return False
 
@@ -175,7 +178,7 @@ def get_char(ch):
     # validate ch, if out of range use '?'
     # get offsets into _font and retrieve char width
     # Return: memoryview of bitmap, height and width
-    return mvfont[offset + 2, next_offset], height, width
+    return _mvfont[offset + 2, next_offset], height, width
 ```
 
 ``height`` and ``width`` are specified in bits (pixels).
@@ -190,6 +193,9 @@ character check.
 ``get_char()`` returns a memoryview of an individual glyph with its dimensions
 and contains all the bytes required to render the character including trailing
 space.
+
+For line-mapped fonts, `get_char()` returns a 4-tuple:  
+(is_horizontal_mapping, memoryview_of_char_line_data, height, width)
 
 ## Binary font files
 
@@ -221,6 +227,8 @@ values represent locations to the right of the origin and increasing y values
 represent downward positions. Mapping defines the relationship between this
 abstract two dimensional array of bits and the physical linear sequence of bytes.
 
+### Bit Mapping
+
 Vertical mapping means that the LSB of first byte is pixel (0,0), MSB of first
 byte is (0, 7). The second byte (assuming the height is greater than 8 pixels)
 is (0, 8) to (0, 15). Once the column is complete the next byte represents
@@ -232,6 +240,55 @@ than 8.
 
 Bit reversal provides for the case where the bit order of each byte is reversed
 i.e. a byte comprising bits [b7b6b5b4b3b2b1b0] becomes [b0b1b2b3b4b5b6b7].
+
+### Line Mapping
+
+There is also an alternative representation of storing characters, that can be
+generated using `font_to_py.py`'s `-L` flag (for **L**ine mapping). Instead of
+storing one high/low bit per pixel in the character space, it stores the lines
+that make up the character. Lines within a character will either be horizontally
+or vertically mapped, depending upon which mapping generates fewer draw calls.
+
+This directional flag is stored in the first byte of a character, with `1`
+meaning horizontal and `0` meaning vertical. The second byte stores the width
+of the character in pixels, with all subsequent bytes storing the line data.
+
+#### Horizontal Line Mapping
+
+For horizontally mapped line data, the format returned by `get_char` is as follows:
+For each row in the character with pixel data, the first byte specifies how many
+lines are in the row, and the second byte specifies the `y` coordinate of each of
+the lines (with (0,0) being the top-left). Each line in the row then follows as
+a pair of bytes, where the first byte is the starting `x` coordinate and the second
+byte is the length of the line (in pixels). Once `num_lines * 2` bytes have been
+exhausted, the next row starts.
+
+Subsequent rows usually follow the same format, however, there is one exception:
+when the next row has the same data as the previous row. (Except of course for
+the `y` coordinate, which should be incremented by `1`.) This is specified by a
+single `0` byte. There can be multiple `0` bytes one after another, and that
+means to use the most recent line data available, incrementing `y` by `1` for
+each `0` byte encountered.
+
+A sample drawing implementation can be found [here](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer.py#L139-L159).
+
+#### Vertical Line Mapping
+
+For vertically mapped line data, the format returned by `get_char` is similar:
+For each column in the character with pixel data, the first byte specifies how
+many lines are in the column, and the second byte specifies the `x` coordinate
+of each of the lines (again with (0,0) being the top-left). Each line in the
+column then follows as a pair of bytes, where the first byte is the starting
+`y` coordinate and the second byte is the length of the line (in pixels). Once
+`num_lines * 2` bytes have been exhausted, the next column starts.
+
+Subsequent columns usually follow the same format, however, again there is one
+exception: when the next column has the same data as the previous column.
+(Except of course for the `x` coordinate, which should be incremented by `1`.)
+Likewise this is specified by a single `0` byte, and there can be multiple `0`
+bytes one after another, incrementing `x` by `1` for each `0` byte encountered.
+
+A sample drawing implementation can be found [here](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer.py#L161-L181).
 
 # Specification and Project Notes
 
