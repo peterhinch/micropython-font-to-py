@@ -42,10 +42,11 @@ class Writer(object):
         cls.x_pos = x
         cls.y_pos = y
 
-    def __init__(self, display, font):
+    def __init__(self, display, font, color=1):
         super().__init__()
         self.set_display(display)
         self.set_font(font)
+        self.set_color(color)
 
     def set_display(self, display):
         self.display = display
@@ -57,15 +58,19 @@ class Writer(object):
         else:
             self.draw_char = self._draw_char
 
+    def set_color(self, color):
+        self.color = color
+
     def _newline(self):
         Writer.x_pos = 0
         Writer.y_pos += self.font.height()
 
-    def draw_text(self, string):
+    def draw_text(self, string, color=None):
+        color = color if color is not None else self.color
         for char in string:
-            self.draw_char(char)
+            self.draw_char(char, color)
 
-    def _draw_char(self, char):
+    def _draw_char(self, char, color):
         if char == '\n':
             self._newline()
             return
@@ -76,13 +81,13 @@ class Writer(object):
             self._newline()
 
         if self.font.hmap():
-            self._draw_hmap_char(glyph, char_height, char_width)
+            self._draw_hmap_char(glyph, char_height, char_width, color)
         else:
-            self._draw_vmap_char(glyph, char_height, char_width)
+            self._draw_vmap_char(glyph, char_height, char_width, color)
 
         Writer.x_pos += char_width
 
-    def _draw_hmap_char(self, glyph, char_height, char_width):
+    def _draw_hmap_char(self, glyph, char_height, char_width, color):
         div, mod = divmod(char_width, 8)
         bytes_per_row = div + 1 if mod else div
 
@@ -95,10 +100,10 @@ class Writer(object):
             y = Writer.y_pos + glyph_row_i
             for glyph_col_i in range(char_width):
                 if glyph_row & (1 << glyph_col_i):
-                    self.display.pixel(x, y)
+                    self.display.pixel(x, y, color)
                 x += 1
 
-    def _draw_vmap_char(self, glyph, char_height, char_width):
+    def _draw_vmap_char(self, glyph, char_height, char_width, color):
         div, mod = divmod(char_height, 8)
         bytes_per_col = div + 1 if mod else div
 
@@ -111,10 +116,10 @@ class Writer(object):
             y = Writer.y_pos
             for glyph_row_i in range(char_height):
                 if glyph_col & (1 << glyph_row_i):
-                    self.display.pixel(x, y)
+                    self.display.pixel(x, y, color)
                 y += 1
 
-    def _draw_lmap_char(self, char):
+    def _draw_lmap_char(self, char, color):
         if char == '\n':
             self._newline()
             return
@@ -125,13 +130,13 @@ class Writer(object):
             self._newline()
 
         if is_lhmap:
-            self._draw_lhmap_char(data)
+            self._draw_lhmap_char(data, color)
         else:
-            self._draw_lvmap_char(data)
+            self._draw_lvmap_char(data, color)
 
         Writer.x_pos += char_width
 
-    def _draw_lhmap_char(self, data):
+    def _draw_lhmap_char(self, data, color):
         prev_lines = []
         y = 0
         data_i = 0
@@ -145,7 +150,7 @@ class Writer(object):
                     x = Writer.x_pos + data[lstart]
                     length = data[lstart + 1]
                     prev_lines.append((x, length))
-                    self.display.hline(x, y, length)
+                    self.display.hline(x, y, length, color)
                 data_i = lstart + 2
             else:
                 y += 1
@@ -153,7 +158,7 @@ class Writer(object):
                     self.display.hline(line[0], y, line[1])
                 data_i += 1
 
-    def _draw_lvmap_char(self, data):
+    def _draw_lvmap_char(self, data, color):
         prev_lines = []
         x = 0
         data_i = 0
@@ -167,7 +172,7 @@ class Writer(object):
                     y = Writer.y_pos + data[lstart]
                     length = data[lstart + 1]
                     prev_lines.append((y, length))
-                    self.display.vline(x, y, length)
+                    self.display.vline(x, y, length, color)
                 data_i = lstart + 2
             else:
                 x += 1
