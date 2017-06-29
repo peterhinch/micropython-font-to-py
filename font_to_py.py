@@ -453,7 +453,6 @@ class Font(dict):
 
     def stream_char(self, char, hmap, reverse):
         bitmap, _, _ = self[char]
-        bitmap.display()
         if hmap:
             gen = bitmap.get_hbyte(reverse)
         else:
@@ -465,10 +464,8 @@ class Font(dict):
         index = bytearray((0, 0))
         for char in self.charset:
             bitmap, width, char_width = self[char]
-            bitmap.display()
             data += byte(1 if bitmap.is_char_lhmap() else 0)
             data += byte(width)
-            # data += byte_pair(width)
             for b in bitmap.stream():
                 data += b
             index += byte_pair(len(data))
