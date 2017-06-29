@@ -155,7 +155,7 @@ class Writer(object):
             else:
                 y += 1
                 for line in prev_lines:
-                    self.display.hline(line[0], y, line[1])
+                    self.display.hline(line[0], y, line[1], color)
                 data_i += 1
 
     def _draw_lvmap_char(self, data, color):
@@ -177,5 +177,5 @@ class Writer(object):
             else:
                 x += 1
                 for line in prev_lines:
-                    self.display.vline(x, line[0], line[1])
+                    self.display.vline(x, line[0], line[1], color)
                 data_i += 1
