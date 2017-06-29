@@ -118,6 +118,15 @@ class Bitmap(object):
 
     def display(self):
         """Print the bitmap's pixels."""
+        for row in range(self.height):
+            for col in range(self.width):
+                char = '#' if self.pixels[row * self.width + col] else '.'
+                print(char, end='')
+            print()
+        print()
+
+    def display_line_map(self):
+        """Print the bitmap's line map."""
         lh_count = len(flatten(self.lh_data))
         print('{} horizontal line mapping: {} hline draw calls. {} bytes'.format(
             self.char,
