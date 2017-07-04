@@ -53,8 +53,16 @@ class Writer(object):
 
     def set_font(self, font):
         self.font = font
+
+        # set self.draw_char depending on the mapping of the font
         if font.lmap():
             self.draw_char = self._draw_lmap_char
+        elif font.hmap() and not font.reverse():
+            # only reverse horizontal bit mapping is supported by this Writer
+            raise NotImplementedError
+        elif not font.hmap() and font.reverse():
+            # reverse vertical bit mapping is not supported by this Writer
+            raise NotImplementedError
         else:
             self.draw_char = self._draw_char
 
@@ -71,6 +79,9 @@ class Writer(object):
             self.draw_char(char, color)
 
     def _draw_char(self, char, color):
+        """
+        Draw a bit mapped character
+        """
         if char == '\n':
             self._newline()
             return
@@ -88,6 +99,9 @@ class Writer(object):
         Writer.x_pos += char_width
 
     def _draw_hmap_char(self, glyph, char_height, char_width, color):
+        """
+        Draw a horizontally & reverse bit mapped character
+        """
         div, mod = divmod(char_width, 8)
         bytes_per_row = div + 1 if mod else div
 
@@ -104,6 +118,9 @@ class Writer(object):
                 x += 1
 
     def _draw_vmap_char(self, glyph, char_height, char_width, color):
+        """
+        Draw a vertically bit mapped character
+        """
         div, mod = divmod(char_height, 8)
         bytes_per_col = div + 1 if mod else div
 
@@ -120,6 +137,9 @@ class Writer(object):
                 y += 1
 
     def _draw_lmap_char(self, char, color):
+        """
+        Draw a line mapped character
+        """
         if char == '\n':
             self._newline()
             return
@@ -137,6 +157,9 @@ class Writer(object):
         Writer.x_pos += char_width
 
     def _draw_lhmap_char(self, data, color):
+        """
+        Draw a horizontally line mapped character
+        """
         prev_lines = []
         y = 0
         data_i = 0
@@ -159,6 +182,9 @@ class Writer(object):
                 data_i += 1
 
     def _draw_lvmap_char(self, data, color):
+        """
+        Draw a vertically line mapped character
+        """
         prev_lines = []
         x = 0
         data_i = 0
