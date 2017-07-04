@@ -693,6 +693,15 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    if args.lmap and args.xmap:
+        quit('Please select only one of line (L) mapping or horizontal (x) mapping')
+
+    if args.lmap and args.reverse:
+        quit('Cannot use bit reversal with line mapping')
+
+    if args.lmap and args.binary:
+        raise NotImplementedError
+
     if not os.path.isfile(args.infile):
         quit("Font filename does not exist")
 
