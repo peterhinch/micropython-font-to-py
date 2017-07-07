@@ -110,7 +110,7 @@ buffer/device.
 
 ### Specifying the font file
 
-Each font file has a ``get_char()`` function accepting an ASCII character as its
+Each font file has a ``get_ch()`` function accepting an ASCII character as its
 argument. It returns a memoryview instance providing access to a bytearray
 corresponding to the individual glyph. The layout of this data is determined by
 the command line arguments presented to the ``font_to_py.py`` utility. It is
@@ -174,7 +174,7 @@ b'\x1b\x01\x35\x01\x4f\x01\x75\x01\x9e\x01\xb2\x01\xcc\x01\xe0\x01'\
 _mvfont = memoryview(_font)
     # Boilerplate code omitted
 
-def get_char(ch):
+def get_ch(ch):
     # validate ch, if out of range use '?'
     # get offsets into _font and retrieve char width
     # Return: memoryview of bitmap, height and width
@@ -190,11 +190,11 @@ will fit the available space. If it will fit on the assumption that all chars
 are maximum width, it can be rendered rapidly without doing a character by
 character check.
 
-``get_char()`` returns a memoryview of an individual glyph with its dimensions
+``get_ch()`` returns a memoryview of an individual glyph with its dimensions
 and contains all the bytes required to render the character including trailing
 space.
 
-For line-mapped fonts, `get_char()` returns a 4-tuple:  
+For line-mapped fonts, `get_ch()` returns a 4-tuple:  
 (is_horizontal_mapping, memoryview_of_char_line_data, height, width)
 
 ## Binary font files
@@ -255,7 +255,7 @@ of the character in pixels, with all subsequent bytes storing the line data.
 
 #### Horizontal Line Mapping
 
-For horizontally mapped line data, the format returned by `get_char` is as follows:
+For horizontally mapped line data, the format returned by `get_ch` is as follows:
 For each row in the character with pixel data, the first byte specifies how many
 lines are in the row, and the second byte specifies the `y` coordinate of each of
 the lines (with (0,0) being the top-left). Each line in the row then follows as
@@ -274,7 +274,7 @@ A sample drawing implementation can be found [here](https://github.com/peterhinc
 
 #### Vertical Line Mapping
 
-For vertically mapped line data, the format returned by `get_char` is similar:
+For vertically mapped line data, the format returned by `get_ch` is similar:
 For each column in the character with pixel data, the first byte specifies how
 many lines are in the column, and the second byte specifies the `x` coordinate
 of each of the lines (again with (0,0) being the top-left). Each line in the

@@ -80,7 +80,7 @@ provided to font-to-py:
 ``reverse`` Returns ``True`` if bit reversal was specified. Should return ``False``  
 ``monospaced`` Returns ``True`` if monospaced rendering was specified.  
 
-Glyphs are returned with the ``get_char`` method. Its argument is a character
+Glyphs are returned with the ``get_ch`` method. Its argument is a character
 and it returns the following values:
 
  * A ``memoryview`` object containing the glyph bytes.

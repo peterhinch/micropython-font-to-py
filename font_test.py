@@ -51,7 +51,7 @@ def render_bitmapped_string(myfont, string):
     height = myfont.height()
     for row in range(height):
         for char in string:
-            data, _, width = myfont.get_char(char)
+            data, _, width = myfont.get_ch(char)
             if myfont.hmap():
                 render_row_hmap(data, row, height, width, myfont.reverse())
             else:
@@ -89,7 +89,7 @@ def render_linemapped_string(myfont, string):
     height = myfont.height()
     for row in range(height):
         for char in string:
-            is_lhmap, data, _, width = myfont.get_char(char)
+            is_lhmap, data, _, width = myfont.get_ch(char)
             if is_lhmap:
                 render_row_lhmap(data, row, height, width)
             else:
@@ -117,6 +117,8 @@ def render_row_lhmap(data, row, height, width):
             lines.append(lines[-1])
             y += 1
             data_i += 1
+        if y == row:
+            break
     while len(lines) < height:
         lines.append([])
 

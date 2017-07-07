@@ -86,7 +86,7 @@ class Writer(object):
             self._newline()
             return
 
-        glyph, char_height, char_width = self.font.get_char(char)
+        glyph, char_height, char_width = self.font.get_ch(char)
 
         if Writer.x_pos + char_width > self.display.screen_width:
             self._newline()
@@ -144,7 +144,7 @@ class Writer(object):
             self._newline()
             return
 
-        is_lhmap, data, char_height, char_width = self.font.get_char(char)
+        is_lhmap, data, char_height, char_width = self.font.get_ch(char)
 
         if Writer.x_pos + char_width > self.display.screen_width:
             self._newline()
