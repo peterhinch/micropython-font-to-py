@@ -98,7 +98,8 @@ an enhanced Writer class of interest to anyone producing a driver for display
 hardware.
 
 His `font_to_py.py` solution has not been implemented here because the font
-files are incompatible with existing device drivers and GUI projects.
+files are incompatible with existing device drivers and GUI projects. Its use
+should be considered for new projects.
 
 # Licence
 
