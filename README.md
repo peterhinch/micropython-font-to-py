@@ -89,6 +89,17 @@ and it returns the following values:
  * The height in pixels.
  * The character width in pixels.
 
+# An alternative solution
+
+Brian Cappello has produced [this fork](https://github.com/briancappello/micropython-font-to-py.git).
+This has an enhanced `font_to_py.py` program offering a fast line mapping along
+with some clever optimisations designed to reduce font file size. He also has
+an enhanced Writer class of interest to anyone producing a driver for display
+hardware.
+
+His `font_to_py.py` solution has not been implemented here because the font
+files are incompatible with existing device drivers and GUI projects.
+
 # Licence
 
 All code is released under the MIT licence.
