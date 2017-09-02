@@ -65,7 +65,7 @@ all pixels of a character are rendered identically.
 
 Converting font files programmatically works best for larger fonts. For small
 fonts, like the 8*8 default used by the SSD1306 driver, it is best to use
-hand-designed binary font files: these are optiised for rendering at a specific
+hand-designed binary font files: these are optimised for rendering at a specific
 size.
 
 # Font file interface
@@ -79,13 +79,11 @@ provided to font-to-py:
 ``hmap`` Returns ``True`` if font is horizontally mapped. Should return ``True``  
 ``reverse`` Returns ``True`` if bit reversal was specified. Should return ``False``  
 ``monospaced`` Returns ``True`` if monospaced rendering was specified.  
-``min_ch`` Returns the ordinal value of the lowest character in the file.  
-``max_ch`` Returns the ordinal value of the highest character in the file.
 
 Glyphs are returned with the ``get_ch`` method. Its argument is a character
 and it returns the following values:
 
- * A ``memoryview`` object containg the glyph bytes.
+ * A ``memoryview`` object containing the glyph bytes.
  * The height in pixels.
  * The character width in pixels.
 

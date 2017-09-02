@@ -28,72 +28,180 @@
 # same Display object.
 
 
+def from_bytes(data, signed=False):
+    return int.from_bytes(data, 'little', signed)
+
+
 class Writer(object):
-    text_row = 0        # attributes common to all Writer instances
-    text_col = 0
-    row_clip = False    # Clip or scroll when screen full
-    col_clip = False    # Clip or new line when row is full
+    # these attributes and set_position are common to all Writer instances
+    x_pos = 0
+    y_pos = 0
 
     @classmethod
-    def set_textpos(cls, row, col):
-        cls.text_row = row
-        cls.text_col = col
+    def set_position(cls, x, y):
+        cls.x_pos = x
+        cls.y_pos = y
 
-    @classmethod
-    def set_clip(cls, row_clip, col_clip):
-        cls.row_clip = row_clip
-        cls.col_clip = col_clip
-
-    def __init__(self, device, font):
+    def __init__(self, display, font, color=1):
         super().__init__()
-        self.device = device
+        self.set_display(display)
+        self.set_font(font)
+        self.set_color(color)
+
+    def set_display(self, display):
+        self.display = display
+
+    def set_font(self, font):
         self.font = font
-        if font.hmap():
-            raise OSError('Font must be vertically mapped')
-        self.screenwidth = device.width  # In pixels
-        self.screenheight = device.height
+
+        # set self.draw_char depending on the mapping of the font
+        if font.lmap():
+            self.draw_char = self._draw_lmap_char
+        elif font.hmap() and not font.reverse():
+            # only reverse horizontal bit mapping is supported by this Writer
+            raise NotImplementedError
+        elif not font.hmap() and font.reverse():
+            # reverse vertical bit mapping is not supported by this Writer
+            raise NotImplementedError
+        else:
+            self.draw_char = self._draw_char
+
+    def set_color(self, color):
+        self.color = color
 
     def _newline(self):
-        height = self.font.height()
-        Writer.text_row += height
-        Writer.text_col = 0
-        margin = self.screenheight - (Writer.text_row + height)
-        if margin < 0:
-            if not Writer.row_clip:
-                self.device.scroll(0, margin)
-                Writer.text_row += margin
+        Writer.x_pos = 0
+        Writer.y_pos += self.font.height()
 
-    def printstring(self, string):
+    def draw_text(self, string, color=None):
+        color = color if color is not None else self.color
         for char in string:
-            self._printchar(char)
+            self.draw_char(char, color)
 
-    def _printchar(self, char):
+    def _draw_char(self, char, color):
+        """
+        Draw a bit mapped character
+        """
         if char == '\n':
             self._newline()
             return
-        glyph, char_height, char_width = self.font.get_ch(char)
-        if Writer.text_row + char_height > self.screenheight:
-            if Writer.row_clip:
-                return
-            self._newline()
-        if Writer.text_col + char_width > self.screenwidth:
-            if Writer.col_clip:
-                return
-            else:
-                self._newline()
 
+        glyph, char_height, char_width = self.font.get_ch(char)
+
+        if Writer.x_pos + char_width > self.display.screen_width:
+            self._newline()
+
+        if self.font.hmap():
+            self._draw_hmap_char(glyph, char_height, char_width, color)
+        else:
+            self._draw_vmap_char(glyph, char_height, char_width, color)
+
+        Writer.x_pos += char_width
+
+    def _draw_hmap_char(self, glyph, char_height, char_width, color):
+        """
+        Draw a horizontally & reverse bit mapped character
+        """
+        div, mod = divmod(char_width, 8)
+        bytes_per_row = div + 1 if mod else div
+
+        for glyph_row_i in range(char_height):
+            glyph_row_start = glyph_row_i * bytes_per_row
+            glyph_row = from_bytes(glyph[glyph_row_start:glyph_row_start + bytes_per_row])
+            if not glyph_row:
+                continue
+            x = Writer.x_pos
+            y = Writer.y_pos + glyph_row_i
+            for glyph_col_i in range(char_width):
+                if glyph_row & (1 << glyph_col_i):
+                    self.display.pixel(x, y, color)
+                x += 1
+
+    def _draw_vmap_char(self, glyph, char_height, char_width, color):
+        """
+        Draw a vertically bit mapped character
+        """
         div, mod = divmod(char_height, 8)
-        gbytes = div + 1 if mod else div    # No. of bytes per column of glyph
-        device = self.device
-        for scol in range(char_width):      # Source column
-            dcol = scol + Writer.text_col   # Destination column
-            drow = Writer.text_row          # Destination row
-            for srow in range(char_height): # Source row
-                gbyte, gbit = divmod(srow, 8)
-                if drow >= self.screenheight:
-                    break
-                if gbit == 0:               # Next glyph byte
-                    data = glyph[scol * gbytes + gbyte]
-                device.pixel(dcol, drow, data & (1 << gbit))
-                drow += 1
-        Writer.text_col += char_width
+        bytes_per_col = div + 1 if mod else div
+
+        for glyph_col_i in range(char_width):
+            glyph_col_start = glyph_col_i * bytes_per_col
+            glyph_col = from_bytes(glyph[glyph_col_start:glyph_col_start + bytes_per_col])
+            if not glyph_col:
+                continue
+            x = Writer.x_pos + glyph_col_i
+            y = Writer.y_pos
+            for glyph_row_i in range(char_height):
+                if glyph_col & (1 << glyph_row_i):
+                    self.display.pixel(x, y, color)
+                y += 1
+
+    def _draw_lmap_char(self, char, color):
+        """
+        Draw a line mapped character
+        """
+        if char == '\n':
+            self._newline()
+            return
+
+        is_lhmap, data, char_height, char_width = self.font.get_ch(char)
+
+        if Writer.x_pos + char_width > self.display.screen_width:
+            self._newline()
+
+        if is_lhmap:
+            self._draw_lhmap_char(data, color)
+        else:
+            self._draw_lvmap_char(data, color)
+
+        Writer.x_pos += char_width
+
+    def _draw_lhmap_char(self, data, color):
+        """
+        Draw a horizontally line mapped character
+        """
+        prev_lines = []
+        y = 0
+        data_i = 0
+        while data_i < len(data):
+            num_lines = data[data_i]
+            if num_lines:
+                prev_lines = []
+                y = Writer.y_pos + data[data_i + 1]
+                for i in range(num_lines):
+                    lstart = data_i + 2 + (i * 2)
+                    x = Writer.x_pos + data[lstart]
+                    length = data[lstart + 1]
+                    prev_lines.append((x, length))
+                    self.display.hline(x, y, length, color)
+                data_i = lstart + 2
+            else:
+                y += 1
+                for line in prev_lines:
+                    self.display.hline(line[0], y, line[1], color)
+                data_i += 1
+
+    def _draw_lvmap_char(self, data, color):
+        """
+        Draw a vertically line mapped character
+        """
+        prev_lines = []
+        x = 0
+        data_i = 0
+        while data_i < len(data):
+            num_lines = data[data_i]
+            if num_lines:
+                prev_lines = []
+                x = Writer.x_pos + data[data_i + 1]
+                for i in range(num_lines):
+                    lstart = data_i + 2 + (i * 2)
+                    y = Writer.y_pos + data[lstart]
+                    length = data[lstart + 1]
+                    prev_lines.append((y, length))
+                    self.display.vline(x, y, length, color)
+                data_i = lstart + 2
+            else:
+                x += 1
+                for line in prev_lines:
+                    self.display.vline(x, line[0], line[1], color)
+                data_i += 1
