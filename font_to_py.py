@@ -517,6 +517,8 @@ if __name__ == "__main__":
 
         if args.largest > 255:
             quit('--largest must be < 256')
+        elif args.largest > 127 and os.path.splitext(args.infile)[1].upper() == '.TTF':
+            print('WARNING: extended ASCII characters may not be correctly converted. See docs.')
 
         if args.errchar < 0 or args.errchar > 255:
             quit('--errchar must be between 0 and 255')

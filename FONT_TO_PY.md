@@ -44,6 +44,10 @@ Example usage to produce a file ``myfont.py`` with height of 23 pixels:
 Any requirement for arguments -xr will be specified in the device driver
 documentation. Bit reversal is required by some display hardware.
 
+Note that producing extended ASCII characters (ordinal value > 127) from ttf
+files seems unreliable. If the expected results are not achieved, use an otf
+font. This appears to be a limitation of the `freetype` library.
+
 ### Output
 
 The specified height is a target. The algorithm gets as close to the target
