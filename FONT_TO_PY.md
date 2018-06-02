@@ -2,6 +2,16 @@
 
 Convert a font file to Python source code.
 
+# Dependency
+
+The utility requires `freetype` which may be installed using `pip3`. On Linux
+at a root prompt:
+
+```shell
+# apt-get install python3-pip
+# pip3 install freetype-py
+```
+
 # Usage
 
 ``font_to_py.py`` is a command line utility written in Python 3. It is run on a
