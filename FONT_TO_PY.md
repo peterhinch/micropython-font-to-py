@@ -1,6 +1,9 @@
 # font_to_py.py
 
-Convert a font file to Python source code.
+Convert a font file to Python source code. The principal reason for doing this
+is to save RAM on resource-limited targets: the font file may be incorporated
+into a firmware build such that it occupies flash memory rather than scarce
+RAM. Python code built into firmware is known as frozen bytecode.
 
 # Dependency
 
@@ -14,8 +17,8 @@ at a root prompt:
 
 # Usage
 
-``font_to_py.py`` is a command line utility written in Python 3. It is run on a
-PC. It takes as input a font file with a ``ttf`` or ``otf`` extension and a
+`font_to_py.py` is a command line utility written in Python 3. It is run on a
+PC. It takes as input a font file with a `ttf` or `otf` extension and a
 required height in pixels and outputs a Python 3 source file. The pixel layout
 is determined by command arguments. By default fonts are stored in variable
 pitch form. This may be overidden by a command line argument.
@@ -28,8 +31,8 @@ Further arguments ensure that the byte contents and layout are correct for the
 target display hardware. Their usage should be specified in the documentation
 for the device driver.
 
-Example usage to produce a file ``myfont.py`` with height of 23 pixels:  
-``font_to_py.py FreeSans.ttf 23 myfont.py``
+Example usage to produce a file `myfont.py` with height of 23 pixels:  
+`font_to_py.py FreeSans.ttf 23 myfont.py`
 
 ## Arguments
 
@@ -69,23 +72,23 @@ creation of a binary font file may not be intended.
 
 ## The font file
 
-Assume that the you have employed the utility to create a file ``myfont.py``. In
+Assume that the you have employed the utility to create a file `myfont.py`. In
 your code you will issue
 
 ```python
 import myfont
 ```
 
-The ``myfont`` module name will then be used to instantiate a ``Writer`` object
+The `myfont` module name will then be used to instantiate a `Writer` object
 to render strings on demand. A practical example may be studied
 [here](https://github.com/peterhinch/micropython-samples/blob/master/SSD1306/ssd1306_test.py).
 The detailed layout of the Python file may be seen [here](./DRIVERS.md).
 
 ### Binary font files
 
-There is an option to create a binary font file, specified with a ``-b`` or
-``--binary`` command line argument. In this instance the output filename must
-not have a ``.py`` extension. This is primarily intended for the e-paper driver
+There is an option to create a binary font file, specified with a `-b` or
+`--binary` command line argument. In this instance the output filename must
+not have a `.py` extension. This is primarily intended for the e-paper driver
 in applications where the file is to be stored on the display's internal flash
 memory rather than using frozen Python modules.
 
@@ -138,10 +141,10 @@ print(len(freeserif._font) + len(freeserif._index))
 ```
 
 The memory used was 5408, 5648, and 5696 bytes. As increments over the initial
-state this corresponds to 240 and 288 bytes. The ``print`` statement shows the
+state this corresponds to 240 and 288 bytes. The `print` statement shows the
 RAM which would be consumed by the data arrays: this was 3271 bytes.
 
-The ``foo()`` function emulates the behaviour of a device driver in rendering a
+The `foo()` function emulates the behaviour of a device driver in rendering a
 character to a display. The local variables constitute memory which will be
 reclaimed on exit from the function. Its additional RAM use was 48 bytes.
 

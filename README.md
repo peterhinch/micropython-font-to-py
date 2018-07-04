@@ -9,20 +9,21 @@ MicroPython platforms generally have limited RAM, but more abundant storage in
 the form of flash memory. Font files tend to be relatively large. The
 conventional technique of rendering strings to a device involves loading the
 entire font into RAM. This is fast but RAM intensive. The alternative of storing
-the font as a random access file and loading individual characters into RAM on
+the font as a random access file and loading individual glyphs into RAM on
 demand is too slow for reasonable performance on most display devices.
 
 This alternative implements a font as a Python source file, with the data being
-declared as ``bytes`` objects. Such a file may be frozen as bytecode. On import
-very little RAM is used, yet the data may be accessed fast. Note that the use
-of frozen bytecode is entirely optional: font files may be imported in the
-normal way if RAM usage is not an issue.
+declared as `bytes` objects. Such a file may be frozen as bytecode: this
+involves building the firmware from source with the Python file in a specific
+directory. On import very little RAM is used, yet the data may be accessed
+fast. Note that the use of frozen bytecode is entirely optional: font files may
+be imported in the normal way if RAM usage is not an issue.
 
 It is intended that the resultant file be usable with two varieties of display
 devices and drivers. These comprise:
 
- 1. Drivers using ``bytearray`` instances as frame buffers, including the
- official ``framebuffer`` class.
+ 1. Drivers using `bytearray` instances as frame buffers, including the
+ official `framebuffer` class.
  2. Drivers for displays where the frame buffer is implemented in the display
  device hardware.
 
@@ -40,7 +41,7 @@ This consists of three components:
 # font_to_py.py
 
 This is a command line utility written in Python 3 to be run on a PC. It takes
-as input a font file in ``ttf`` or ``otf`` form together with a height in pixels
+as input a font file in `ttf` or `otf` form together with a height in pixels
 and outputs a Python source file containing the font data. Fixed and variable
 pitch rendering are supported. The design has the following aims:
 
@@ -56,9 +57,9 @@ RAM usage when importing fonts stored as frozen bytecode.
 
 # Limitations
 
-By default the ASCII character set from ``chr(32)`` to ``chr(126)`` is supported
+By default the ASCII character set from `chr(32)` to `chr(126)` is supported
 but command line arguments enable the range to be modified with extended ASCII
-characters to ``chr(255)`` being included if required. Kerning is not supported.
+characters to `chr(255)` being included if required. Kerning is not supported.
 Fonts are one bit per pixel. This does not rule out colour displays: the device
 driver can add colour information at the rendering stage. It does assume that
 all pixels of a character are rendered identically.
@@ -70,36 +71,24 @@ size.
 
 # Font file interface
 
-A font file is imported in the usual way e.g. ``import font14``. It contains
+A font file is imported in the usual way e.g. `import font14`. It contains
 the following methods which return values defined by the arguments which were
 provided to font-to-py:
 
-``height`` Returns height in pixels.  
-``max_width`` Returns maximum width of a glyph in pixels.  
-``hmap`` Returns ``True`` if font is horizontally mapped. Should return ``True``  
-``reverse`` Returns ``True`` if bit reversal was specified. Should return ``False``  
-``monospaced`` Returns ``True`` if monospaced rendering was specified.  
-``min_ch`` Returns the ordinal value of the lowest character in the file.  
-``max_ch`` Returns the ordinal value of the highest character in the file.
+`height` Returns height in pixels.  
+`max_width` Returns maximum width of a glyph in pixels.  
+`hmap` Returns `True` if font is horizontally mapped. Should return `True`  
+`reverse` Returns `True` if bit reversal was specified. Should return `False`  
+`monospaced` Returns `True` if monospaced rendering was specified.  
+`min_ch` Returns the ordinal value of the lowest character in the file.  
+`max_ch` Returns the ordinal value of the highest character in the file.
 
-Glyphs are returned with the ``get_ch`` method. Its argument is a character
+Glyphs are returned with the `get_ch` method. Its argument is a character
 and it returns the following values:
 
- * A ``memoryview`` object containg the glyph bytes.
+ * A `memoryview` object containg the glyph bytes.
  * The height in pixels.
  * The character width in pixels.
-
-# An alternative solution
-
-Brian Cappello has produced [this fork](https://github.com/briancappello/micropython-font-to-py.git).
-This has an enhanced `font_to_py.py` program offering a fast line mapping along
-with some clever optimisations designed to reduce font file size. He also has
-an enhanced Writer class of interest to anyone producing a driver for display
-hardware.
-
-His `font_to_py.py` solution has not been implemented here because the font
-files are incompatible with existing device drivers and GUI projects. Its use
-should be considered for new projects.
 
 # Licence
 
