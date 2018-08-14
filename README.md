@@ -1,7 +1,9 @@
 # MicroPython font handling
 
-This is an attempt to offer a standard method of creating and deploying fonts
-to MicroPython display drivers.
+This repository defines a method of creating and deploying fonts for use with
+MicroPython display drivers. A PC utility converts industry standard font files
+to Python sourcecode and a MicroPython module enables these to be rendered to
+suitable device drivers, notably OLED displays using the SSD1306 chip.
 
 # Introduction
 
@@ -19,28 +21,28 @@ directory. On import very little RAM is used, yet the data may be accessed
 fast. Note that the use of frozen bytecode is entirely optional: font files may
 be imported in the normal way if RAM usage is not an issue.
 
-It is intended that the resultant file be usable with two varieties of display
-devices and drivers. These comprise:
+The resultant file is usable with two varieties of display device drivers:
 
- 1. Drivers using `bytearray` instances as frame buffers, including the
- official `framebuffer` class.
+ 1. Drivers where the display class is subclassed from the official
+ `framebuffer` class.
  2. Drivers for displays where the frame buffer is implemented in the display
  device hardware.
 
-# The proposed solution
+# Solution
 
-This consists of three components:
+This comprises three components:
 
- 1. font_to_py.py This is a utility intended to be run on a PC and converts a
+ 1. [font_to_py.py](./FONT_TO_PY.md) This utility runs on a PC and converts a
  font file to Python source. See below.
- 2. The Writer class (writer.py) This facilitates writing text to a device
- given a suitably designed device driver. See [here](./DRIVERS.md).
- 3. A device driver specification. This includes an example for rendering text
- to an SSD1306 device with arbitrary fonts. Also described in the above reference.
+ 2. [The Writer class](./writer/WRITER.md) This facilitates rendering text to a
+ device having a suitably designed device driver.
+ 3. [Device driver notes](./writer/DRIVERS.md). Notes for authors of display
+ device drivers. Provides details of the font file format and information on
+ ensuring comptibility with the `Writer` classes.
 
 # font_to_py.py
 
-This is a command line utility written in Python 3 to be run on a PC. It takes
+This command line utility is written in Python 3 and runs on a PC. It takes
 as input a font file in `ttf` or `otf` form together with a height in pixels
 and outputs a Python source file containing the font data. Fixed and variable
 pitch rendering are supported. The design has the following aims:

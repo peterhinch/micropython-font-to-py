@@ -1,5 +1,6 @@
-# writer.py Implements the Writer class.
-# V0.2 Peter Hinch Dec 2016
+# writer_minimal.py Implements the Writer class.
+# Minimal version for SSD1306
+# V0.22 Peter Hinch 3rd Jan 2018: Supports new SSD1306 driver.
 
 # The MIT License (MIT)
 #
@@ -27,8 +28,9 @@
 # Multiple Writer instances may be created, each rendering a font to the
 # same Display object.
 
+import framebuf
 
-class Writer(object):
+class Writer():
     text_row = 0        # attributes common to all Writer instances
     text_col = 0
     row_clip = False    # Clip or scroll when screen full
@@ -44,12 +46,16 @@ class Writer(object):
         cls.row_clip = row_clip
         cls.col_clip = col_clip
 
-    def __init__(self, device, font):
-        super().__init__()
+    def __init__(self, device, font, verbose=True):
         self.device = device
         self.font = font
+        # Allow to work with any font mapping
         if font.hmap():
-            raise OSError('Font must be vertically mapped')
+            self.map = framebuf.MONO_HMSB if font.reverse() else framebuf.MONO_HLSB
+        else:
+            raise ValueError('Font must be horizontally mapped.')
+        if verbose:
+            print('Orientation: {} Reversal: {}'.format('horiz' if font.hmap() else 'vert', font.reverse()))
         self.screenwidth = device.width  # In pixels
         self.screenheight = device.height
 
@@ -67,7 +73,9 @@ class Writer(object):
         for char in string:
             self._printchar(char)
 
-    def _printchar(self, char):
+    # Method using blitting. Efficient rendering for monochrome displays.
+    # Tested on SSD1306. Invert is for black-on-white rendering.
+    def _printchar(self, char, invert=False):
         if char == '\n':
             self._newline()
             return
@@ -81,19 +89,10 @@ class Writer(object):
                 return
             else:
                 self._newline()
-
-        div, mod = divmod(char_height, 8)
-        gbytes = div + 1 if mod else div    # No. of bytes per column of glyph
-        device = self.device
-        for scol in range(char_width):      # Source column
-            dcol = scol + Writer.text_col   # Destination column
-            drow = Writer.text_row          # Destination row
-            for srow in range(char_height): # Source row
-                gbyte, gbit = divmod(srow, 8)
-                if drow >= self.screenheight:
-                    break
-                if gbit == 0:               # Next glyph byte
-                    data = glyph[scol * gbytes + gbyte]
-                device.pixel(dcol, drow, data & (1 << gbit))
-                drow += 1
+        buf = bytearray(glyph)
+        if invert:
+            for i, v in enumerate(buf):
+                buf[i] = 0xFF & ~ v
+        fbc = framebuf.FrameBuffer(buf, char_width, char_height, self.map)
+        self.device.blit(fbc, Writer.text_col, Writer.text_row)
         Writer.text_col += char_width

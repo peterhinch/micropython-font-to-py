@@ -5,10 +5,12 @@ is to save RAM on resource-limited targets: the font file may be incorporated
 into a firmware build such that it occupies flash memory rather than scarce
 RAM. Python code built into firmware is known as frozen bytecode.
 
-# Dependency
+###### [Main README](./README.md)
 
-The utility requires `freetype` which may be installed using `pip3`. On Linux
-at a root prompt:
+# Dependencies
+
+The utility requires Python 3.2 or greater, also `freetype` which may be
+installed using `pip3`. On Linux at a root prompt:
 
 ```shell
 # apt-get install python3-pip
@@ -81,7 +83,7 @@ import myfont
 
 The `myfont` module name will then be used to instantiate a `Writer` object
 to render strings on demand. A practical example may be studied
-[here](https://github.com/peterhinch/micropython-samples/blob/master/SSD1306/ssd1306_test.py).
+[here](https://github.com/peterhinch/micropython-samples/blob/master/SSD1306/ssd1306_demo.py).
 The detailed layout of the Python file may be seen [here](./DRIVERS.md).
 
 ### Binary font files
@@ -116,39 +118,45 @@ may be viewed [here](https://dbader.org/blog/monochrome-font-rendering-with-free
 
 # Appendix: RAM utilisation Test Results
 
-A font file was created, frozen as bytecode and deployed to a version 1.0
-Pyboard. The font was saved as variable pitch with a height of 19 pixels. The
-following code was then pasted at the REPL:
+The supplied `freesans20.py` and `courier20.py` files were frozen as bytecode
+on a Pyboard V1.0. The following code was pasted at the REPL:
 
 ```python
 import gc, micropython
 gc.collect()
 micropython.mem_info()
 
-import freeserif
+import freesans20
+
+gc.collect()
+micropython.mem_info()
+
+import courier20
 
 gc.collect()
 micropython.mem_info()
 
 def foo():
-    addr, height, width = freeserif.get_ch('a')
+    addr, height, width = freesans20.get_ch('a')
 
 foo()
 
 gc.collect()
 micropython.mem_info()
-print(len(freeserif._font) + len(freeserif._index))
+print(len(freesans20._font) + len(freesans20._index))
 ```
 
-The memory used was 5408, 5648, and 5696 bytes. As increments over the initial
-state this corresponds to 240 and 288 bytes. The `print` statement shows the
-RAM which would be consumed by the data arrays: this was 3271 bytes.
+The memory used was 1712, 2048, 2400 and 2416 bytes. As increments over the
+prior state this corresponds to 336, 352 and 16 bytes. The `print` statement
+shows the RAM which would be consumed by the data arrays: this was 3766 bytes
+for `freesans20`.
 
 The `foo()` function emulates the behaviour of a device driver in rendering a
-character to a display. The local variables constitute memory which will be
-reclaimed on exit from the function. Its additional RAM use was 48 bytes.
+character to a display. The local variables constitute memory which is
+reclaimed on exit from the function. Its additional RAM use was 16 bytes.
 
 ## Conclusion
 
-With a font of height 19 pixels RAM saving was an order of magnitude. The
-saving will be greater if larger fonts are used
+With a font of height 20 pixels RAM saving was an order of magnitude. The
+saving will be greater if larger fonts are used as RAM usage is independent of
+the array sizes.
