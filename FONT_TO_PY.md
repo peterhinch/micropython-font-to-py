@@ -55,13 +55,25 @@ Example usage to produce a file `myfont.py` with height of 23 pixels:
  * -l or --largest Ordinal value of largest character to be stored. Default 126.
  * -e or --errchar Ordinal value of character to be rendered if an attempt is
  made to display an out-of-range character. Default 63 (ASCII "?").
+ * -c or --charset Option to restrict the characters in the font to a specific
+ set. See below.
+
+The -c option reduces the size of the font file. If the font file is frozen as
+bytecode this will not reduce RAM usage but it will conserve flash. An example
+usage for a digital clock font:
+
+```shell
+font_to_py.py Arial.ttf 20 arial_clock.py -c 1234567890:
+```
+If a character set is specified, `--smallest` and `--largest` should not be
+specified: these values are computed from the charcater set.
 
 Any requirement for arguments -xr will be specified in the device driver
 documentation. Bit reversal is required by some display hardware.
 
-Note that producing extended ASCII characters (ordinal value > 127) from ttf
-files seems unreliable. If the expected results are not achieved, use an otf
-font. This appears to be a limitation of the `freetype` library.
+There have been reports that producing extended ASCII characters (ordinal
+value > 127) from ttf files is unreliable. If the expected results are not
+achieved, use an otf font. This may be a limitation of the `freetype` library.
 
 ### Output
 
