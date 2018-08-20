@@ -63,7 +63,7 @@ bytecode this will not reduce RAM usage but it will conserve flash. An example
 usage for a digital clock font:
 
 ```shell
-font_to_py.py Arial.ttf 20 arial_clock.py -c 1234567890:
+$ font_to_py.py Arial.ttf 20 arial_clock.py -c 1234567890:
 ```
 If a character set is specified, `--smallest` and `--largest` should not be
 specified: these values are computed from the charcater set.
