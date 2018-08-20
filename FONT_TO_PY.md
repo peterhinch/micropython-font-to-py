@@ -158,9 +158,9 @@ micropython.mem_info()
 print(len(freesans20._font) + len(freesans20._index))
 ```
 
-The memory used was 1712, 2048, 2400 and 2416 bytes. As increments over the
-prior state this corresponds to 336, 352 and 16 bytes. The `print` statement
-shows the RAM which would be consumed by the data arrays: this was 3766 bytes
+The memory used was 1712, 2032, 2384 and 2416 bytes. As increments over the
+prior state this corresponds to 320, 352 and 32 bytes. The `print` statement
+shows the RAM which would be consumed by the data arrays: this was 3956 bytes
 for `freesans20`.
 
 The `foo()` function emulates the behaviour of a device driver in rendering a
