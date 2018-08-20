@@ -95,8 +95,8 @@ import myfont
 
 The `myfont` module name will then be used to instantiate a `Writer` object
 to render strings on demand. A practical example may be studied
-[here](https://github.com/peterhinch/micropython-samples/blob/master/SSD1306/ssd1306_demo.py).
-The detailed layout of the Python file may be seen [here](./DRIVERS.md).
+[here](./writer/writer_demo.py).
+The detailed layout of the Python file may be seen [here](./writer/DRIVERS.md).
 
 ### Binary font files
 
