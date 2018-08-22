@@ -261,7 +261,9 @@ class Font(dict):
         self.minchar = minchar
         self.maxchar = maxchar
         self.monospaced = monospaced
+        # .def_charset is requested charset or '' if -c was not specified
         self.def_charset = charset
+        # .charset has all defined characters with '' for those in range but undefined.
         if defchar is None: # Binary font
             self.charset = [chr(char) for char in range(minchar, maxchar + 1)]
         elif charset == '':
@@ -271,9 +273,11 @@ class Font(dict):
             self.minchar = n[0]
             self.maxchar = n[-1]
             self.charset = [chr(defchar)] + [chr(char) if chr(char) in charset else '' for char in range(n[0], n[-1] + 1)]
+        # .pop_charset has only the defined characters
+        self.pop_charset = [c for c in self.charset if c]
         self.max_width = self.get_dimensions(size)
         self.width = self.max_width if monospaced else 0
-        for char in self.charset:  # Populate dictionary
+        for char in self.pop_charset:  # Populate dictionary
             self._render_char(char)
 
     # n-pass solution to setting a precise height.
@@ -289,7 +293,7 @@ class Font(dict):
             # and update the overall dimensions of the resulting bitmap.
             max_width = 0
             max_ascent = 0
-            for char in self.charset:
+            for char in self.pop_charset:
                 glyph = self._glyph_for_character(char)
                 max_ascent = max(max_ascent, glyph.ascent)
                 max_descent = max(max_descent, glyph.descent)
@@ -311,21 +315,23 @@ class Font(dict):
     def _glyph_for_character(self, char):
         # Let FreeType load the glyph for the given character and tell it to
         # render a monochromatic bitmap representation.
+        assert char != ''
         self._face.load_char(char, freetype.FT_LOAD_RENDER |
                              freetype.FT_LOAD_TARGET_MONO)
         return Glyph.from_glyphslot(self._face.glyph)
 
     def _render_char(self, char):
-        glyph = self._glyph_for_character(char)
-        char_width = int(max(glyph.width, glyph.advance_width))  # Actual width
-        width = self.width if self.width else char_width  # Space required if monospaced
-        outbuffer = Bitmap(width, self.height)
+        if char:
+            glyph = self._glyph_for_character(char)
+            char_width = int(max(glyph.width, glyph.advance_width))  # Actual width
+            width = self.width if self.width else char_width  # Space required if monospaced
+            outbuffer = Bitmap(width, self.height)
 
-        # The vertical drawing position should place the glyph
-        # on the baseline as intended.
-        row = self.height - int(glyph.ascent) - self._max_descent
-        outbuffer.bitblt(glyph.bitmap, row)
-        self[char] = [outbuffer, width, char_width]
+            # The vertical drawing position should place the glyph
+            # on the baseline as intended.
+            row = self.height - int(glyph.ascent) - self._max_descent
+            outbuffer.bitblt(glyph.bitmap, row)
+            self[char] = [outbuffer, width, char_width]
 
     def stream_char(self, char, hmap, reverse):
         outbuffer, _, _ = self[char]
@@ -431,7 +437,7 @@ def write_data(stream, fnt, font_path, hmap, reverse):
 # 1    1       0x42 0xe7
 def write_binary_font(op_path, font_path, height, hmap, reverse):
     try:
-        fnt = Font(font_path, height, 32, 126, True, None)  # All chars have same width
+        fnt = Font(font_path, height, 32, 126, True, None, '')  # All chars have same width
     except freetype.ft_errors.FT_Exception:
         print("Can't open", font_path)
         return False
