@@ -242,6 +242,8 @@ class Writer():
             self.tab = value
         return self.tab
 
+    def setcolor(self, *_):
+        return self.fgcolor, self.bgcolor
 
 # Writer for colour displays or upside down rendering
 class CWriter(Writer):
@@ -253,14 +255,24 @@ class CWriter(Writer):
             Writer.state[devid] = DisplayState()
         Writer.state[devid].usd = value
 
-    def __init__(self,device, font, verbose=True):
+    def __init__(self, device, font, fgcolor=None, bgcolor=None, verbose=True):
         super().__init__(device, font, verbose)
-
-    def setcolor(self, fgcolor=None, bgcolor=None):
+        if bgcolor is not None:  # Assume monochrome.
+            self.bgcolor = bgcolor
         if fgcolor is not None:
             self.fgcolor = fgcolor
-        if bgcolor is not None:
-            self.bgcolor = bgcolor
+        self.def_bgcolor = self.bgcolor
+        self.def_fgcolor = self.fgcolor
+
+    def setcolor(self, fgcolor=None, bgcolor=None):
+        if fgcolor is None and bgcolor is None:
+            self.fgcolor = self.def_fgcolor
+            self.bgcolor = self.def_bgcolor
+        else:
+            if fgcolor is not None:
+                self.fgcolor = fgcolor
+            if bgcolor is not None:
+                self.bgcolor = bgcolor
         return self.fgcolor, self.bgcolor
 
     def _printchar(self, char, invert=False, recurse=False):
@@ -296,48 +308,3 @@ class CWriter(Writer):
                 break
         s.text_col += -char_width if usd else char_width
         self.cpos += 1
-
-class Label():
-    def __init__(self, writer, row, col, text, invert=False):
-        self.writer = writer
-        self.row = row
-        self.col = col
-        self.invert = invert
-        if isinstance(text, int):
-            self.length = text
-            self.text = ''
-        else:
-            self.length = writer.stringlen(text)
-            self.text = text
-        if not isinstance(self, Field):
-            self.show()
-
-    def show(self):
-        wri = self.writer
-        dev = wri.device
-        Writer.set_textpos(dev, self.row, self.col)
-        wri.printstring(self.text, self.invert)
-
-class Field(Label):
-    def __init__(self, writer, row, col, max_text, border=False):
-        super().__init__(writer, row, col, max_text, False)
-        self.border = border
-
-    def value(self, text, invert=False):
-        self.text = text
-        self.invert = invert
-        self.show()
-
-    def show(self):
-        wri = self.writer
-        dev = wri.device
-        if wri._getstate().usd:
-            row = dev.height - self.row - wri.height()
-            col = dev.width - self.col - self.length
-        else:
-            row = self.row
-            col = self.col
-        dev.fill_rect(col, row, self.length, wri.height(), wri.bgcolor)
-        if self.border:
-            dev.rect(col - 2, row - 2, self.length + 4, wri.height() + 4, wri.fgcolor)
-        super().show()

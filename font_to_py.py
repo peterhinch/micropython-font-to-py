@@ -514,6 +514,11 @@ if __name__ == "__main__":
                         help = 'Character set. e.g. 1234567890: to restrict for a clock display.',
                         default = '')
 
+    parser.add_argument('-k', '--charset_file',
+                        type = str,
+                        help = 'File containing charset e.g. cyrillic_subset.',
+                        default = '')
+
     args = parser.parse_args()
     if not args.infile[0].isalpha():
         quit('Font filenames must be valid Python variable names.')
@@ -552,10 +557,19 @@ if __name__ == "__main__":
         if args.charset and (args.smallest != 32 or args.largest != 126):
             print('WARNING: specified smallest and largest values ignored.')
 
+        if args.charset_file:
+            try:
+                with open(args.charset_file, 'r') as f:
+                    cset = f.read()
+            except OSError:
+                print("Can't open", args.charset_file, 'for reading.')
+                sys.exit(1)
+        else:
+            cset = args.charset
         print('Writing Python font file.')
         if not write_font(args.outfile, args.infile, args.height, args.fixed,
                           args.xmap, args.reverse, args.smallest, args.largest,
-                          args.errchar, args.charset):
+                          args.errchar, cset):
             sys.exit(1)
 
     print(args.outfile, 'written successfully.')

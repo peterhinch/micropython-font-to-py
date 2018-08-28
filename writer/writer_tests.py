@@ -32,7 +32,8 @@ import machine
 import utime
 import uos
 from ssd1306_setup import WIDTH, HEIGHT, setup
-from writer import Writer, CWriter, Field, Label
+from writer import Writer, CWriter
+from writer_gui import Label
 
 # Fonts
 import freesans20
@@ -179,29 +180,9 @@ def fields(use_spi=False, soft=True):
     Writer.set_textpos(ssd, 0, 0)  # In case previous tests have altered it
     wri = Writer(ssd, fixed, verbose=False)
     wri.set_clip(False, False, False)
-    textfield = Field(wri, 0, 2, 'longer', False)
-    numfield = Field(wri, 25, 2, '99.99', True)
-    countfield = Field(wri, 0, 90, '1', False)
-    n = 1
-    for s in ('short', 'longer', '1', ''):
-        textfield.value(s)
-        numfield.value('{:5.2f}'.format(int.from_bytes(uos.urandom(2),'little')/1000))
-        countfield.value('{:1d}'.format(n))
-        n += 1
-        ssd.show()
-        utime.sleep(2)
-    textfield.value('Done', True)
-    ssd.show()
-
-def usd_fields(use_spi=False, soft=True):
-    ssd = setup(use_spi, soft)  # Create a display instance
-    CWriter.invert_display(ssd)
-    CWriter.set_textpos(ssd, 0, 0)  # In case previous tests have altered it
-    wri = CWriter(ssd, fixed, verbose=False)
-    wri.set_clip(False, False, False)
-    textfield = Field(wri, 25, 2, 'longer', False)
-    numfield = Field(wri, 2, 2, '99.99', True)
-    countfield = Field(wri, 25, 100, '1', False)
+    textfield = Label(wri, 0, 2, wri.stringlen('longer'))
+    numfield = Label(wri, 25, 2, wri.stringlen('99.99'), bordercolor=None)
+    countfield = Label(wri, 0, 90, wri.stringlen('1'))
     n = 1
     for s in ('short', 'longer', '1', ''):
         textfield.value(s)
@@ -223,14 +204,16 @@ def multi_fields(use_spi=False, soft=True):
     dy = small.height() + 6
     y = 2
     col = 15
+    width = wri.stringlen('99.99')
     for txt in ('X:', 'Y:', 'Z:'):
         Label(wri, y, 0, txt)
-        nfields.append(Field(wri, y, col, '99.99', True))
+        nfields.append(Label(wri, y, col, width, bordercolor=None))  # Draw border
         y += dy
 
     for _ in range(10):
         for field in nfields:
-            field.value('{:5.2f}'.format(int.from_bytes(uos.urandom(2),'little')/1000))
+            value = int.from_bytes(uos.urandom(3),'little')/167722
+            field.value('{:5.2f}'.format(value))
         ssd.show()
         utime.sleep(1)
     Label(wri, 0, 64, ' DONE ', True)
@@ -254,13 +237,14 @@ def dual(use_spi=False, soft=True):
         y = 2
         for txt in ('X:', 'Y:', 'Z:'):
             Label(wri, y, 0, txt)
-            nfields[n].append(Field(wri, y, col, '99.99', True))
+            nfields[n].append(Label(wri, y, col, wri.stringlen('99.99'), True))
             y += dy
 
     for _ in range(10):
         for n, wri in enumerate((wri0, wri1)):
             for field in nfields[n]:
-                field.value('{:5.2f}'.format(int.from_bytes(uos.urandom(2),'little')/1000))
+                value = int.from_bytes(uos.urandom(3),'little')/167722
+                field.value('{:5.2f}'.format(value))
             wri.device.show()
             utime.sleep(1)
     for wri in (wri0, wri1):
@@ -284,9 +268,8 @@ fonts() Two fonts.
 tabs() Tab stops.
 usd_tabs() Upside-down tabs.
 wrap() Word wrapping
-fields() Field test with dynamic data.
-usd_fields() Upside down fields.
-multi_fields() Fields and labels.
+fields() Label test with dynamic data.
+multi_fields() More Labels.
 dual() Test two displays on one host.'''
 
 print(tstr)

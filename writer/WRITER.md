@@ -4,6 +4,10 @@ These classes facilitate rendering Python font files to displays where the
 display driver is subclassed from the `framebuf` class. An example is the
 official [SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
 
+Basic support is for scrolling text display using multiple fonts. The
+`writer_gui` module provides optional extensions for user interface objects
+displayed at arbitrary locations on screen.
+
 Example code and images are for 128*64 SSD1306 OLED displays.
 
 ![Image](images/IMG_2866.JPG)  
@@ -19,7 +23,7 @@ Right justified text.
 Mixed text and graphics.
 
 ![Image](images/fields.JPG)  
-Labels and Fields.
+Labels and Fields (from writer_gui.py).
 
 # Contents
 
@@ -37,9 +41,8 @@ Labels and Fields.
    2.2.1 [Static Method](./WRITER.md#221-static-method)  
    2.2.2 [Constructor](./WRITER.md#222-constructor)  
    2.2.3 [Methods](./WRITER.md#223-methods)  
- 3. [The Label and Field classes](./WRITER.md#3-the-label-and-field-classes)  
+ 3. [The writer_gui module](./WRITER.md#3-the-writer_gui-module)  
   3.1 [The Label class](./WRITER.md#31-the-label-class)  
-  3.2 [The Field class](./WRITER.md#32-the-field-class)  
  4. [Notes](./WRITER.md#4-notes)
 
 ###### [Main README](../README.md)
@@ -73,12 +76,13 @@ should be used: the official SSD1306 driver is not compatible with hardware I2C
 ## 1.2 Files
 
  1. `writer.py` Supports `Writer` and `CWriter` classes.
- 2. `ssd1306_setup.py` Hardware initialisation for SSD1306. Requires the
+ 2. `writer_gui.py` Provides optional GUI objects.
+ 3. `ssd1306_setup.py` Hardware initialisation for SSD1306. Requires the
  official [SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
- 3. `writer_demo.py` Demo using a 128*64 SSD1306 OLED display. Import to see
+ 4. `writer_demo.py` Demo using a 128*64 SSD1306 OLED display. Import to see
  usage information.
- 4. `writer_tests.py` Test/demo scripts. Import to see usage information.
- 5. `writer_minimal.py` A minimal version for highly resource constrained
+ 5. `writer_tests.py` Test/demo scripts. Import to see usage information.
+ 6. `writer_minimal.py` A minimal version for highly resource constrained
  devices.
 
 Sample fonts:
@@ -200,7 +204,8 @@ This takes the following args:
 ## 2.2 The CWriter class
 
 This extends the `Writer` class by adding support for upside-down and/or color
-displays.
+displays. A color value is an integer whose interpretation is dependent on the
+display hardware and device driver.
 
 ### 2.2.1 Static method
 
@@ -215,64 +220,76 @@ The following static method is added:
 
 ### 2.2.2 Constructor
 
-This takes the same args as the `Writer` constructor:  
+This takes the following args:  
  1. `device` The hardware device driver instance for the screen in use.
  2. `font` A Python font instance.
- 3. `verbose=True` If `True` the constructor emits console printout.
+ 3. `fgcolor=None` Foreground color. If `None` a monochrome display is assumed.
+ 4. `bgcolor=None` Background color. If `None` a monochrome display is assumed.
+ 5. `verbose=True` If `True` the constructor emits console printout.
 
 ### 2.2.3 Methods
 
 All methods of the base class are supported. Additional method:  
  1. `setcolor` Args: `fgcolor=None`, `bgcolor=None`. Sets the foreground and
- background colors. If either is `None` that value is left unchanged. Initial
- constructor defaults are 1 and 0 for monochrome displays. Returns foreground
+ background colors. If one is `None` that value is left unchanged. If both
+ are `None` the constructor defaults are restored. Constructor defaults are
+ 1 and 0 for monochrome displays (`Writer`). Returns foreground
  and background color values.
 
 The `printstring` method works as per the base class except that the string is
 rendered in foreground color on background color (or reversed if `invert` is
 `True`).
 
-# 3. Label and Field classes
+# 3. The writer_gui module
 
-These support applications where text is to be rendered at specific screen
-locations. These classes change the text insertion point as required and are
-therefore not intended for use with the writer's `printstring` method.
+This supports user interface objects whose text components are drawn using the
+`Writer` or `CWriter` classes. Upside down rendering is not supported: attempts
+to specify it will produce unexpected results.
+
+The objects are drawn at specific locations on screen and are incompatible with
+the display of scrolling text: they are therefore not intended for use with the
+writer's `printstring` method.
 
 ## 3.1 The Label class
 
-This renders a fixed text string to a defined screen location.
+This supports applications where text is to be rendered at specific screen
+locations.
+
+Text can be static or dynamic. In the case of dynamic text the background is
+cleared to ensure that short strings can cleanly replace longer ones.
+
+Labels can be displayed with an optional single pixel border.
+
+Colors are handled flexibly. By default the colors used are those of the
+`Writer` instance, however they can be changed dynamically, for example to warn
+of overrange values.
 
 Constructor args:  
  1. `writer` The `Writer` instance (font and screen) to use.
  2. `row` Location on screen.
  3. `col`
- 4. `text` Text to display
+ 4. `text` If a string is passed it is displayed: typically used for static
+ text. If an integer is passed it is interpreted as the maximum text length
+ in pixels; typically obtained from `writer.stringlen('-99.99')`. Nothing is
+ dsplayed until `.value()` is called. Intended for dynamic text fields.
  5. `invert=False` Display in inverted or normal style.
+ 6. `fgcolor=None` Optionally override the `Writer` colors.
+ 7. `bgcolor=None`
+ 8. `bordercolor=False` If `False` no border is displayed. If `None` a border
+ is shown in the `Writer` forgeround color. If a color is passed, it is used.
 
 The constructor displays the string at the required location.
 
-Method:
- 1. `show` No args. For future use.
-
-## 3.2 The Field class
-
-Constructor args:
- 1. `writer` The `Writer` instance (font and screen) to use.
- 2. `row` Location on screen.
- 3. `col`
- 4. `max_text` Defines the longest text string the field must display. Can
- either be an integer number of pixels or a text string. In the latter case the
- length of the string in pixels is calculated and stored.
- 5. `border=False` Optional sigle pixel border around text.
-
-The constructor does not cause anything to be displayed. The location of a
-field is that of the top left hand corner of its text contents. If a border is
-drawn, it extends in all directions beyond the text size by two pixels.
-
 Methods:
- 1. `value` Args `text`, `invert=False`. Causes the text to be displayed in
- normal or inverted style.
- 2. `show` No args. For future use.
+ 1. `value` Redraws the label. This takes the following args:
+  1. `text=None` The text to display. If `None` displays last value.
+  2. ` invert=False` If true, show inverse text.
+  3. `fgcolor=None` Foreground color: if `None` the `Writer` default is used.
+  4. `bgcolor=None` Background color, as per foreground.
+  5. `bordercolor=None` As per above except that if `False` is passed, no
+  border is displayed. This clears a previously drawn border.
+ Returns the current text string.  
+ 2. `show` No args. (Re)draws the label. For future/subclass use.
 
 # 4. Notes
 

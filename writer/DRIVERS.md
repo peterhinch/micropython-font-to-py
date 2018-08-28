@@ -20,7 +20,8 @@ Where the buffer is held on the MicroPython host the driver should be
 subclassed from the official `framebuf` module. An example of such a driver is
 the [official SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
 In addition the driver class should have bound variables `width` and `height`
-containing the size of the display in pixels.
+containing the size of the display in pixels. Color displays should have a
+bound variable `mode` holding the `framebuf` color mode.
 
 The device driver defines a buffer of the correct size to hold a full frame of
 data and instantiates the `framebuf.FrameBuffer` superclass to reference it.
