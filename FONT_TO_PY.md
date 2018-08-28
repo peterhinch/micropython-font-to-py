@@ -57,6 +57,9 @@ Example usage to produce a file `myfont.py` with height of 23 pixels:
  made to display an out-of-range character. Default 63 (ASCII "?").
  * -c or --charset Option to restrict the characters in the font to a specific
  set. See below.
+ * -k or --charset_file Obtain the character set from a file. Typical use is
+ for alternative character sets such as Cyrillic: the file must contain the
+ character set to be included. An example file is `cyrillic_subset`.
 
 The -c option reduces the size of the font file. If the font file is frozen as
 bytecode this will not reduce RAM usage but it will conserve flash. An example
@@ -65,6 +68,11 @@ usage for a digital clock font:
 ```shell
 $ font_to_py.py Arial.ttf 20 arial_clock.py -c 1234567890:
 ```
+Example usage with the -k option:  
+```shell
+font_to_py.py FreeSans.ttf 20 freesans_cyr_20.py -k cyrillic_subset
+```
+
 If a character set is specified, `--smallest` and `--largest` should not be
 specified: these values are computed from the charcater set.
 
