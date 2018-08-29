@@ -59,7 +59,7 @@ Example usage to produce a file `myfont.py` with height of 23 pixels:
  set. See below.
  * -k or --charset_file Obtain the character set from a file. Typical use is
  for alternative character sets such as Cyrillic: the file must contain the
- character set to be included. An example file is `cyrillic_subset`.
+ character set to be included. An example file is `cyrillic`.
 
 The -c option reduces the size of the font file. If the font file is frozen as
 bytecode this will not reduce RAM usage but it will conserve flash. An example
