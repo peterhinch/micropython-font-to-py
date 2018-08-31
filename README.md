@@ -1,9 +1,10 @@
 # MicroPython font handling
 
 This repository defines a method of creating and deploying fonts for use with
-MicroPython display drivers. A PC utility converts industry standard font files
-to Python sourcecode and a MicroPython module enables these to be rendered to
-suitable device drivers, notably OLED displays using the SSD1306 chip.
+MicroPython display drivers. A PC utility renders industry standard font files
+as a bitmap in the form of Python sourcecode. A MicroPython module enables such
+files to be displayed on devices with suitable device drivers. These include
+OLED displays using the SSD1306 chip and the official device driver.
 
 # Introduction
 
@@ -34,8 +35,8 @@ This comprises three components:
 
  1. [font_to_py.py](./FONT_TO_PY.md) This utility runs on a PC and converts a
  font file to Python source. See below.
- 2. [The Writer class](./writer/WRITER.md) This facilitates rendering text to a
- device having a suitably designed device driver.
+ 2. [Writer and CWriter classes](./writer/WRITER.md) These facilitate rendering
+ text to a monochrome or colour display having a suitable device driver.
  3. [Device driver notes](./writer/DRIVERS.md). Notes for authors of display
  device drivers. Provides details of the font file format and information on
  ensuring comptibility with the `Writer` classes.
@@ -59,28 +60,31 @@ RAM usage when importing fonts stored as frozen bytecode.
 
 # Limitations
 
-By default the ASCII character set from `chr(32)` to `chr(126)` is supported
-but command line arguments enable the range to be modified with extended ASCII
-characters to `chr(255)` being included if required. Kerning is not supported.
-Fonts are one bit per pixel. This does not rule out colour displays: the device
-driver can add colour information at the rendering stage. It does assume that
-all pixels of a character are rendered identically.
+Kerning is not supported. Fonts are one bit per pixel. Colour displays are
+supported by the `CWriter` class which adds colour information at the rendering
+stage. This assumes that all pixels of a character are coloured identically.
 
 Converting font files programmatically works best for larger fonts. For small
 fonts, like the 8*8 default used by the SSD1306 driver, it is best to use
 hand-designed binary font files: these are optiised for rendering at a specific
 size.
 
+By default the `font_to_py.py` utility produces the ASCII character set from
+`chr(32)` to `chr(126)` inclusive. Command line options enable the character
+set to be modified to include extended ASCII. Alternative sets may be specified
+such as non-English languages or limited, non-contiguous sets for specialist
+applications.
+
 # Font file interface
 
 A font file is imported in the usual way e.g. `import font14`. It contains
 the following methods which return values defined by the arguments which were
-provided to font-to-py:
+provided to `font_to_py.py`:
 
 `height` Returns height in pixels.  
 `max_width` Returns maximum width of a glyph in pixels.  
-`hmap` Returns `True` if font is horizontally mapped. Should return `True`  
-`reverse` Returns `True` if bit reversal was specified. Should return `False`  
+`hmap` Returns `True` if font is horizontally mapped.  
+`reverse` Returns `True` if bit reversal was specified.  
 `monospaced` Returns `True` if monospaced rendering was specified.  
 `min_ch` Returns the ordinal value of the lowest character in the file.  
 `max_ch` Returns the ordinal value of the highest character in the file.
@@ -91,6 +95,12 @@ and it returns the following values:
  * A `memoryview` object containg the glyph bytes.
  * The height in pixels.
  * The character width in pixels.
+
+The `font_to_py.py` utility allows a default glyph to be specified (typically
+`?`). If called with an undefined character, this glyph will be returned.
+
+The `min_ch` and `max_ch` methods are mainly relevant to contiguous character
+sets.
 
 # Licence
 

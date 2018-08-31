@@ -27,7 +27,8 @@ pitch form. This may be overidden by a command line argument.
 
 By default the ASCII character set (ordinal values 32 to 126 inclusive) is
 supported. Command line arguments can modify this range as required, if
-necessary to include extended ASCII characters up to 255.
+necessary to include extended ASCII characters up to 255. Alternatively non
+English or non-contiguous character sets may be defined.
 
 Further arguments ensure that the byte contents and layout are correct for the
 target display hardware. Their usage should be specified in the documentation
@@ -61,27 +62,28 @@ Example usage to produce a file `myfont.py` with height of 23 pixels:
  for alternative character sets such as Cyrillic: the file must contain the
  character set to be included. An example file is `cyrillic`.
 
-The -c option reduces the size of the font file. If the font file is frozen as
-bytecode this will not reduce RAM usage but it will conserve flash. An example
-usage for a digital clock font:
+The -c option may be used to reduce the size of the font file by limiting the
+character set. If the font file is frozen as bytecode this will not reduce RAM
+usage but it will conserve flash. Example usage for a digital clock font:
 
 ```shell
 $ font_to_py.py Arial.ttf 20 arial_clock.py -c 1234567890:
 ```
 Example usage with the -k option:  
 ```shell
-font_to_py.py FreeSans.ttf 20 freesans_cyr_20.py -k cyrillic_subset
+font_to_py.py FreeSans.ttf 20 freesans_cyr_20.py -k cyrillic
 ```
 
 If a character set is specified, `--smallest` and `--largest` should not be
-specified: these values are computed from the charcater set.
+specified: these values are computed from the character set.
 
 Any requirement for arguments -xr will be specified in the device driver
 documentation. Bit reversal is required by some display hardware.
 
 There have been reports that producing extended ASCII characters (ordinal
 value > 127) from ttf files is unreliable. If the expected results are not
-achieved, use an otf font. This may be a limitation of the `freetype` library.
+achieved, use an otf font. However I have successfully created the Cyrillic
+font from a `ttf`. Perhaps not all fonts are created equal...
 
 ### Output
 
@@ -128,13 +130,15 @@ Consequently the following arguments are invalid:
 
 # Dependencies, links and licence
 
-The code is released under the MIT licence. It requires Python 3.2 or later.
+The code is released under the MIT licence. The `font_to_py.py` utility
+requires Python 3.2 or later.
 
 The module relies on [Freetype](https://www.freetype.org/) which is included in most Linux distributions.  
 It uses the [Freetype Python bindings](http://freetype-py.readthedocs.io/en/latest/index.html)
 which will need to be installed.  
 My solution draws on the excellent example code written by Daniel Bader. This
-may be viewed [here](https://dbader.org/blog/monochrome-font-rendering-with-freetype-and-python) and [here](https://gist.github.com/dbader/5488053).
+may be viewed [here](https://dbader.org/blog/monochrome-font-rendering-with-freetype-and-python)
+and [here](https://gist.github.com/dbader/5488053).
 
 # Appendix: RAM utilisation Test Results
 

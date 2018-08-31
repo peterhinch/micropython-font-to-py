@@ -1,8 +1,8 @@
-# ssd1306_test.py Demo pogram for rendering arbitrary fonts to an SSD1306 OLED display.
+# ssd1306_test.py Demo program for rendering arbitrary fonts to an SSD1306 OLED display.
 
 # The MIT License (MIT)
 #
-# Copyright (c) 2016 Peter Hinch
+# Copyright (c) 2018 Peter Hinch
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -33,12 +33,13 @@ import utime
 import uos
 from ssd1306_setup import WIDTH, HEIGHT, setup
 from writer import Writer, CWriter
-from writer_gui import Label
+from writer_gui import Label, Meter
 
 # Fonts
 import freesans20
 import courier20 as fixed
 import font6 as small
+import arial10
 
 def inverse(use_spi=False, soft=True):
     ssd = setup(use_spi, soft)  # Create a display instance
@@ -175,50 +176,6 @@ def wrap(use_spi=False, soft=True):
     wri.printstring('the quick    brown fox jumps over')
     ssd.show()
 
-def fields(use_spi=False, soft=True):
-    ssd = setup(use_spi, soft)  # Create a display instance
-    Writer.set_textpos(ssd, 0, 0)  # In case previous tests have altered it
-    wri = Writer(ssd, fixed, verbose=False)
-    wri.set_clip(False, False, False)
-    textfield = Label(wri, 0, 2, wri.stringlen('longer'))
-    numfield = Label(wri, 25, 2, wri.stringlen('99.99'), bordercolor=None)
-    countfield = Label(wri, 0, 90, wri.stringlen('1'))
-    n = 1
-    for s in ('short', 'longer', '1', ''):
-        textfield.value(s)
-        numfield.value('{:5.2f}'.format(int.from_bytes(uos.urandom(2),'little')/1000))
-        countfield.value('{:1d}'.format(n))
-        n += 1
-        ssd.show()
-        utime.sleep(2)
-    textfield.value('Done', True)
-    ssd.show()
-
-def multi_fields(use_spi=False, soft=True):
-    ssd = setup(use_spi, soft)  # Create a display instance
-    Writer.set_textpos(ssd, 0, 0)  # In case previous tests have altered it
-    wri = Writer(ssd, small, verbose=False)
-    wri.set_clip(False, False, False)
-
-    nfields = []
-    dy = small.height() + 6
-    y = 2
-    col = 15
-    width = wri.stringlen('99.99')
-    for txt in ('X:', 'Y:', 'Z:'):
-        Label(wri, y, 0, txt)
-        nfields.append(Label(wri, y, col, width, bordercolor=None))  # Draw border
-        y += dy
-
-    for _ in range(10):
-        for field in nfields:
-            value = int.from_bytes(uos.urandom(3),'little')/167722
-            field.value('{:5.2f}'.format(value))
-        ssd.show()
-        utime.sleep(1)
-    Label(wri, 0, 64, ' DONE ', True)
-    ssd.show()
-
 def dual(use_spi=False, soft=True):
     ssd0 = setup(False, soft)  # I2C display
     ssd1 = setup(True, False)  # SPI  instance
@@ -243,7 +200,7 @@ def dual(use_spi=False, soft=True):
     for _ in range(10):
         for n, wri in enumerate((wri0, wri1)):
             for field in nfields[n]:
-                value = int.from_bytes(uos.urandom(3),'little')/167722
+                value = int.from_bytes(uos.urandom(3),'little')/167772
                 field.value('{:5.2f}'.format(value))
             wri.device.show()
             utime.sleep(1)
@@ -268,8 +225,6 @@ fonts() Two fonts.
 tabs() Tab stops.
 usd_tabs() Upside-down tabs.
 wrap() Word wrapping
-fields() Label test with dynamic data.
-multi_fields() More Labels.
 dual() Test two displays on one host.'''
 
 print(tstr)

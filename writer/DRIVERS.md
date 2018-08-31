@@ -1,33 +1,50 @@
 # Device Driver Implementation
 
 Display devices comprise two varieties, depending on whether the hardware
-includes a frame buffer or whether the frame buffer is located on the
+includes a frame buffer or whether a frame buffer must be located on the
 controlling system.
 
-In the latter case the [Writer](./WRITER.md) class extends the capability of
-the driver to use multiple fonts plus additional functionality.
+If the device has no frame buffer then the device driver should be designed
+to subclass `framebuf.FrameBuffer` with a suitably sized buffer on the host. If
+the device has its own frame buffer there are two options for the driver. One
+is to perform all display operations using the device's own firmware
+primitives. This is efficient and avoids the need for a buffer on the host,
+however it does involve some code complexity.
 
-Where the buffer is located on the display device, the means of controlling the
-text insertion point and the means of performing partial buffer updates will be
-device dependent. If the functionality of the `Writer` class is required it
-must be implemented at device driver level.
+The second option is to subclass `framebuf.FrameBuffer`, provide a buffer on
+the host, and copy its contents to the device's buffer when required. This can
+result in a very simple device driver at cost of RAM use and update speed. It
+also ensures compatibility with additional libraries to simplify display tasks.
+
+If a device subclasses `framebuf.FrameBuffer` the following libraries enhance
+its capability. The [Writer](./WRITER.md) class enables it to use multiple
+fonts with additional functionality such as word wrap, string metrics and tab
+handling. The [nano-gui](https://github.com/peterhinch/micropython-nano-gui.git)
+provides rudimentary GUI capability.
+
+If a driver relies on a buffer located on the display device, the means of
+controlling the text insertion point, performing partial buffer updates and
+executing graphics primitives will be device dependent. If the functionality of
+the `writer` or `nanogui` libraries are required it will need to be
+implemented at device driver level.
 
 ###### [Main README](../README.md)
 
-## Drivers for unbuffered displays
+# Drivers subclassed from framebuf
 
 Where the buffer is held on the MicroPython host the driver should be
-subclassed from the official `framebuf` module. An example of such a driver is
-the [official SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
+subclassed from the official `framebuf.FrameBuffer` class. An example of such a
+driver is the [official SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
 In addition the driver class should have bound variables `width` and `height`
-containing the size of the display in pixels. Color displays should have a
-bound variable `mode` holding the `framebuf` color mode.
+containing the size of the display in pixels, plus a `show` method which copies
+the buffer to the physical device.
 
 The device driver defines a buffer of the correct size to hold a full frame of
 data and instantiates the `framebuf.FrameBuffer` superclass to reference it.
-The `FrameBuffer` mode is selected to match the layout of the target display.
-The driver implements a `show` method to efficiently copy the buffer contents
-to the display hardware.
+Monochrome displays should define the frame buffer format to match the physical
+characteristics of the display. In the case of colour displays RAM may be saved
+by using `framebuf.GS8` 8-bit colour. The `show` method can map this to the
+device's colour space if 8-bit mode is not supported.
 
 This design enables the supplied `Writer` and `CWriter` classes to be used for
 rendering arbitrary fonts to the display. The author of the device driver need
@@ -37,14 +54,26 @@ The `Writer` and `CWriter` classes require horizontally mapped fonts. This is
 regardless of the mapping used in the device driver's `FrameBuffer`: the
 `Writer.printstring` method deals transparently with any mismatch.
 
-## Drivers for buffered displays
+## Example drivers
+
+The following drivers are subclassed from `framebuf.FrameBuffer` and have been
+tested with `writer.py` and `nanogui.py`.
+
+ * The [SSD1306 OLED driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py)
+ * The [Nokia 5110](https://github.com/mcauser/micropython-pcd8544/blob/master/pcd8544_fb.py)
+ * The [SSD1331 colour OLED](https://github.com/peterhinch/micropython-nano-gui/blob/master/drivers/ssd1331/ssd1331.py)
+
+The latter example illustrates a very simple driver which provides full access
+to `writer.py` and `nanogui.py` libraries.
+
+# Drivers using the display buffer
 
 Authors of such drivers will need to have an understanding of the font file
 format.
 
-### Specifying the font layout
+## Specifying the font layout
 
-Each font file has a `get_ch()` function accepting an ASCII character as its
+Each font file has a `get_ch()` function accepting a character as its
 argument. It returns a memoryview instance providing access to a bytearray
 corresponding to the individual glyph. The layout of this data is determined by
 the command line arguments presented to the `font_to_py.py` utility. It is
@@ -196,10 +225,11 @@ i.e. a byte comprising bits [b7b6b5b4b3b2b1b0] becomes [b0b1b2b3b4b5b6b7].
 
 The design aims primarily to minimise RAM usage. Minimising the size of the
 bytecode is a secondary aim. Indexed addressing is used to reduce this in
-the case of proportional fonts, at a small cost in performance. The size of the
-Python source file is a lesser consideration, with readability being prioritised
-over size. Hence they are "pretty formatted" with the large bytes objects
-split over multiple lines for readability.
+the case of proportional fonts, and also to facilitate non-contiguous fonts, at
+a small cost in performance. The size of the Python source file is a lesser
+consideration, with readability being prioritised over size. Hence they are
+"pretty formatted" with the large bytes objects split over multiple lines for
+readability.
 
 Fonts created with the `font_to_py` utility have been extensively tested with
 each of the mapping options. They are used with drivers for SSD1306 OLEDs,

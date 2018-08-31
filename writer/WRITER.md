@@ -1,12 +1,17 @@
 # Writer and Cwriter classes
 
 These classes facilitate rendering Python font files to displays where the
-display driver is subclassed from the `framebuf` class. An example is the
-official [SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
+display driver is subclassed from the `framebuf` class. Examples are:
+
+ * The official [SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
+ * The [PCD8544/Nokia 5110](https://github.com/mcauser/micropython-pcd8544.git).
+ * The [Adafruit 0.96 inch color OLED](https://www.adafruit.com/product/684)
+ with [this driver](https://github.com/peterhinch/micropython-nano-gui/tree/master/drivers/ssd1331).
 
 Basic support is for scrolling text display using multiple fonts. The
-`writer_gui` module provides optional extensions for user interface objects
-displayed at arbitrary locations on screen.
+[nanogui](https://github.com/peterhinch/micropython-nano-gui.git) module has
+optional extensions for user interface objects displayed at arbitrary locations
+on screen.
 
 Example code and images are for 128*64 SSD1306 OLED displays.
 
@@ -23,7 +28,7 @@ Right justified text.
 Mixed text and graphics.
 
 ![Image](images/fields.JPG)  
-Labels and Fields (from writer_gui.py).
+Labels and Fields (from nanogui.py).
 
 # Contents
 
@@ -41,9 +46,7 @@ Labels and Fields (from writer_gui.py).
    2.2.1 [Static Method](./WRITER.md#221-static-method)  
    2.2.2 [Constructor](./WRITER.md#222-constructor)  
    2.2.3 [Methods](./WRITER.md#223-methods)  
- 3. [The writer_gui module](./WRITER.md#3-the-writer_gui-module)  
-  3.1 [The Label class](./WRITER.md#31-the-label-class)  
- 4. [Notes](./WRITER.md#4-notes)
+ 3. [Notes](./WRITER.md#4-notes)
 
 ###### [Main README](../README.md)
 
@@ -61,9 +64,11 @@ This update for practical applications has the following features:
  * Tab support.
  * String metrics to enable right or centre justification.
  * Inverse (background color on foreground color) display.
- * Labels: render static text at a fixed location.
- * Fields - render dynamically changing text to a fixed rectangular region.
  * Inverted display option.
+
+Note that these changes have significantly increased code size. On the ESP8266
+it is likely that `writer.py` will need to be frozen as bytecode. The original
+very simple version still exists as `writer_minimal.py`.
 
 ## 1.1 Hardware
 
@@ -71,7 +76,7 @@ Tests and demos assume a 128*64 SSD1306 OLED display connected via I2C or SPI.
 Wiring is specified in `ssd1306_setup.py`. Edit this to use a different bus or
 for a non-Pyboard target. At the time of writing the default of software I2C
 should be used: the official SSD1306 driver is not compatible with hardware I2C
-(see [Notes](./WRITER.md#4-notes)).
+(see [Notes](./WRITER.md#3-notes)).
 
 ## 1.2 Files
 
@@ -240,58 +245,7 @@ The `printstring` method works as per the base class except that the string is
 rendered in foreground color on background color (or reversed if `invert` is
 `True`).
 
-# 3. The writer_gui module
-
-This supports user interface objects whose text components are drawn using the
-`Writer` or `CWriter` classes. Upside down rendering is not supported: attempts
-to specify it will produce unexpected results.
-
-The objects are drawn at specific locations on screen and are incompatible with
-the display of scrolling text: they are therefore not intended for use with the
-writer's `printstring` method.
-
-## 3.1 The Label class
-
-This supports applications where text is to be rendered at specific screen
-locations.
-
-Text can be static or dynamic. In the case of dynamic text the background is
-cleared to ensure that short strings can cleanly replace longer ones.
-
-Labels can be displayed with an optional single pixel border.
-
-Colors are handled flexibly. By default the colors used are those of the
-`Writer` instance, however they can be changed dynamically, for example to warn
-of overrange values.
-
-Constructor args:  
- 1. `writer` The `Writer` instance (font and screen) to use.
- 2. `row` Location on screen.
- 3. `col`
- 4. `text` If a string is passed it is displayed: typically used for static
- text. If an integer is passed it is interpreted as the maximum text length
- in pixels; typically obtained from `writer.stringlen('-99.99')`. Nothing is
- dsplayed until `.value()` is called. Intended for dynamic text fields.
- 5. `invert=False` Display in inverted or normal style.
- 6. `fgcolor=None` Optionally override the `Writer` colors.
- 7. `bgcolor=None`
- 8. `bordercolor=False` If `False` no border is displayed. If `None` a border
- is shown in the `Writer` forgeround color. If a color is passed, it is used.
-
-The constructor displays the string at the required location.
-
-Methods:
- 1. `value` Redraws the label. This takes the following args:
-  1. `text=None` The text to display. If `None` displays last value.
-  2. ` invert=False` If true, show inverse text.
-  3. `fgcolor=None` Foreground color: if `None` the `Writer` default is used.
-  4. `bgcolor=None` Background color, as per foreground.
-  5. `bordercolor=None` As per above except that if `False` is passed, no
-  border is displayed. This clears a previously drawn border.
- Returns the current text string.  
- 2. `show` No args. (Re)draws the label. For future/subclass use.
-
-# 4. Notes
+# 3. Notes
 
 Possible future enhancements:
  1. General rendering to a rectangular area. This may be problematic as the

@@ -102,7 +102,7 @@ class Writer():
 
     def _newline(self):
         s = self._getstate()
-        height = self.height()
+        height = self.font.height()
         if self.usd:
             s.text_row -= height
             s.text_col = self.screenwidth - 1
@@ -130,7 +130,8 @@ class Writer():
             self.wrap = wrap
         return self.row_clip, self.col_clip, self.wrap
 
-    def height(self):
+    @property
+    def height(self):  # Property for consistency with device
         return self.font.height()
 
     def printstring(self, string, invert=False):

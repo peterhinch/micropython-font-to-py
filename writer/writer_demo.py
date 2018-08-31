@@ -1,8 +1,10 @@
-# ssd1306_test.py Demo pogram for rendering arbitrary fonts to an SSD1306 OLED display.
+# writer_demo.py Demo pogram for rendering arbitrary fonts to an SSD1306 OLED display.
+# Illustrates a minimal example. Requires ssd1306_setup.py which contains
+# wiring details.
 
 # The MIT License (MIT)
 #
-# Copyright (c) 2016 Peter Hinch
+# Copyright (c) 2018 Peter Hinch
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
