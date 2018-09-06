@@ -56,6 +56,7 @@ Example usage to produce a file `myfont.py` with height of 23 pixels:
  * -l or --largest Ordinal value of largest character to be stored. Default 126.
  * -e or --errchar Ordinal value of character to be rendered if an attempt is
  made to display an out-of-range character. Default 63 (ASCII "?").
+ * -i or --iterate Specialist use. See below.
  * -c or --charset Option to restrict the characters in the font to a specific
  set. See below.
  * -k or --charset_file Obtain the character set from a file. Typical use is
@@ -84,6 +85,11 @@ There have been reports that producing extended ASCII characters (ordinal
 value > 127) from ttf files is unreliable. If the expected results are not
 achieved, use an otf font. However I have successfully created the Cyrillic
 font from a `ttf`. Perhaps not all fonts are created equal...
+
+The `-i` or `--iterate` argument. For specialist applications. Specifying this
+causes a generator function `glyphs` to be included in the Python font file. A
+generator instantiated with this will yield `bitmap`, `height`, and `width` for
+every glyph in the font.
 
 ### Output
 

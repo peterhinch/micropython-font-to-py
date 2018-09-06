@@ -140,7 +140,8 @@ def get_ch(ch):
     return mvfont[offset + 2, next_offset], height, width
 ```
 
-`height` and `width` are specified in bits (pixels).
+`height` and `width` are specified in bits (pixels). See Appendix 1 for extra
+code in fonts created with the `--iterate` arg.
 
 In the case of monospaced fonts the `max_width` function returns the width of
 every character. For variable pitch fonts it returns the width of the widest
@@ -235,3 +236,25 @@ Fonts created with the `font_to_py` utility have been extensively tested with
 each of the mapping options. They are used with drivers for SSD1306 OLEDs,
 SSD1963 LCD displays, the official LCD160CR and the Digital Artists 2.7 inch
 e-paper display.
+
+# Appendix 1. The -i --iterate argument
+
+This specialist arg causes extra code to be included in the font file, to
+provide for iterating over all the glyphs in the file. The following sample of
+the extra code assumes a font comprising '0123456789:'
+
+```python
+def glyphs():
+    for c in """0123456789:""":
+        yield c, get_ch(c)
+```
+
+Typical usage under CPython 3 (for a font `cyrillic.py`) is
+
+```python
+import cyrillic
+res = []
+for glyph in cyrillic.glyphs():
+    res.append(list(glyph))  # Each element is [char, glyph, height, width]
+```
+
