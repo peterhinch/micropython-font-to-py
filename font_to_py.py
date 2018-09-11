@@ -398,7 +398,7 @@ def write_font(op_path, font_path, height, monospaced, hmap, reverse, minchar, m
         print("Can't open", font_path)
         return False
     try:
-        with open(op_path, 'w') as stream:
+        with open(op_path, 'w', encoding='utf-8') as stream:
             write_data(stream, fnt, font_path, hmap, reverse, iterate)
     except OSError:
         print("Can't open", op_path, 'for writing')
@@ -571,7 +571,7 @@ if __name__ == "__main__":
 
         if args.charset_file:
             try:
-                with open(args.charset_file, 'r') as f:
+                with open(args.charset_file, 'r', encoding='utf-8') as f:
                     cset = f.read()
             except OSError:
                 print("Can't open", args.charset_file, 'for reading.')
