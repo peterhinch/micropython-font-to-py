@@ -253,7 +253,7 @@ Possible future enhancements:
  2. Extend word wrapping to cases where words are separated by tabs or hyphens.
  3. An asynchronous version.
 
-As stated above the official SSD1306 drriver is incompatible with hardware I2C
+As stated above the official SSD1306 driver is incompatible with hardware I2C
 and this problem cannot efficiently be fixed. [PR4020](https://github.com/micropython/micropython/pull/4020)
 proposes an enhncement which will facilitate an improved SSD1306 driver capable
 of using hard or soft I2C.
