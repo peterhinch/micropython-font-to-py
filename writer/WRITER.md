@@ -7,6 +7,11 @@ display driver is subclassed from the `framebuf` class. Examples are:
  * The [PCD8544/Nokia 5110](https://github.com/mcauser/micropython-pcd8544.git).
  * The [Adafruit 0.96 inch color OLED](https://www.adafruit.com/product/684)
  with [this driver](https://github.com/peterhinch/micropython-nano-gui/tree/master/drivers/ssd1331).
+ * The [Adafruit 1.5 inch color OLED](https://www.adafruit.com/product/1431) and
+ the [Adafruit 1.27 inch color OLED](https://www.adafruit.com/product/1673) with
+ [this driver](https://github.com/peterhinch/micropython-nano-gui/blob/master/drivers/ssd1351/ssd1351.py)
+ for STM32 (Pyboards etc) or [this one](https://github.com/peterhinch/micropython-nano-gui/blob/master/drivers/ssd1351/ssd1351_generic.py)
+ for other targets.
 
 Basic support is for scrolling text display using multiple fonts. The
 [nanogui](https://github.com/peterhinch/micropython-nano-gui.git) module has
