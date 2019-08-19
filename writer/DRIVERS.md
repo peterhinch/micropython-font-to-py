@@ -62,6 +62,7 @@ tested with `writer.py` and `nanogui.py`.
  * The [SSD1306 OLED driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py)
  * The [Nokia 5110](https://github.com/mcauser/micropython-pcd8544/blob/master/pcd8544_fb.py)
  * The [SSD1331 colour OLED](https://github.com/peterhinch/micropython-nano-gui/blob/master/drivers/ssd1331/ssd1331.py)
+ * The [HX1230 96x68 LCD](https://github.com/mcauser/micropython-hx1230/blob/master/hx1230_fb.py)
 
 The latter example illustrates a very simple driver which provides full access
 to `writer.py` and `nanogui.py` libraries.
