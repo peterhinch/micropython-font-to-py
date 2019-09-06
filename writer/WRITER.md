@@ -12,6 +12,7 @@ display driver is subclassed from the `framebuf` class. Examples are:
  [this driver](https://github.com/peterhinch/micropython-nano-gui/blob/master/drivers/ssd1351/ssd1351.py)
  for STM32 (Pyboards etc) or [this one](https://github.com/peterhinch/micropython-nano-gui/blob/master/drivers/ssd1351/ssd1351_generic.py)
  for other targets.
+ * The [HX1230 96x68 LCD](https://github.com/mcauser/micropython-hx1230.git).
 
 Basic support is for scrolling text display using multiple fonts. The
 [nanogui](https://github.com/peterhinch/micropython-nano-gui.git) module has
