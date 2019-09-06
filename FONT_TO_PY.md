@@ -61,7 +61,10 @@ Example usage to produce a file `myfont.py` with height of 23 pixels:
  set. See below.
  * -k or --charset_file Obtain the character set from a file. Typical use is
  for alternative character sets such as Cyrillic: the file must contain the
- character set to be included. An example file is `cyrillic`.
+ character set to be included. An example file is `cyrillic`. Another is 
+ `extended` which adds unicode characters "° μ π ω ϕ θ α β γ δ λ Ω" to those
+ with `ord` values from 32-128. Such files will only produce useful results if
+ the font file includes them.
 
 The -c option may be used to reduce the size of the font file by limiting the
 character set. If the font file is frozen as bytecode this will not reduce RAM
@@ -77,6 +80,10 @@ font_to_py.py FreeSans.ttf 20 freesans_cyr_20.py -k cyrillic
 
 If a character set is specified, `--smallest` and `--largest` should not be
 specified: these values are computed from the character set.
+
+The representation of non-contiguous character sets having large gaps (such as
+the `extended` set) is not very efficient. This matters little if the font is
+to be frozen as bytecode. I plan to investigate ways of improving this.
 
 Any requirement for arguments -xr will be specified in the device driver
 documentation. Bit reversal is required by some display hardware.

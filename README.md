@@ -31,7 +31,7 @@ The resultant file is usable with two varieties of display device drivers:
 
 # Solution
 
-This comprises three components:
+This comprises three components, links to docs below:
 
  1. [font_to_py.py](./FONT_TO_PY.md) This utility runs on a PC and converts a
  font file to Python source. See below.
