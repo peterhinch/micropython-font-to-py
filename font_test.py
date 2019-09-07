@@ -36,14 +36,14 @@ from font_to_py import Font, write_font
 
 def validate_hmap(data, height, width):
     bpr = (width - 1)//8 + 1
-    msg = 'Horizontal map, invalid data length'
-    assert len(data) == bpr * height, msg
+    msg = 'Horizontal map, invalid data length got {} expected {}'
+    assert len(data) == bpr * height, msg.format(len(data), bpr * height)
 
 
 def validate_vmap(data, height, width):
     bpc = (height - 1)//8 + 1
-    msg = 'Vertical map, invalid data length'
-    assert len(data) == bpc * width, msg
+    msg = 'Vertical map, invalid data length got {} expected {}'
+    assert len(data) == bpc * width, msg.format(len(data), bpc * width)
 
 
 # Routines to render to REPL
@@ -135,10 +135,17 @@ def test_arrays(string, height, monospaced, hmap, reverse):
 
 # Render a string to REPL using a specified Python font file
 # usage font_test.test_font('freeserif', 'abc')
-def test_font(fontfile, string):
+# Default tests outliers with fonts created with -k extended
+def test_font(fontfile, string='abg'+chr(126)+chr(127)+chr(176)+chr(177)+chr(937)+chr(981)):
     if fontfile in sys.modules:
         del sys.modules[fontfile]  # force reload
     myfont = import_module(fontfile)
+    print(('Horizontal' if myfont.hmap() else 'Vertical') + ' map')
+    print(('Reverse' if myfont.reverse() else 'Normal') + ' bit order')
+    print(('Fixed' if myfont.monospaced() else 'Proportional') + ' spacing')
+    print('Dimensions height*max_width {} * {}'.format(myfont.height(), myfont.max_width()))
+    s, e = myfont.min_ch(), myfont.max_ch()
+    print('Start char "{}" (ord {}) end char "{}" (ord {})'.format(chr(s), s, chr(e), e))
 
     height = myfont.height()
     for row in range(height):

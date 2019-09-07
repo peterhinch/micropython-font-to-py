@@ -5,12 +5,21 @@ is to save RAM on resource-limited targets: the font file may be incorporated
 into a firmware build such that it occupies flash memory rather than scarce
 RAM. Python code built into firmware is known as frozen bytecode.
 
+## V0.27/0.28 notes
+
+7 Sept 2019
+
+Remove redundancy from index file: significantly reduces file size for sparse
+fonts. Add a comment field in the output file showing creation command line.
+Repo includes the file `extended`. This facilitates creating fonts with useful
+scientific glyphs. Improvements to `font_test.py`.
+
 ###### [Main README](./README.md)
 
 # Dependencies
 
 The utility requires Python 3.2 or greater, also `freetype` which may be
-installed using `pip3`. On Linux at a root prompt:
+installed using `pip3`. On Linux (you may need a root prompt):
 
 ```shell
 # apt-get install python3-pip
@@ -25,10 +34,11 @@ required height in pixels and outputs a Python 3 source file. The pixel layout
 is determined by command arguments. By default fonts are stored in variable
 pitch form. This may be overidden by a command line argument.
 
-By default the ASCII character set (ordinal values 32 to 126 inclusive) is
-supported. Command line arguments can modify this range as required, if
-necessary to include extended ASCII characters up to 255. Alternatively non
-English or non-contiguous character sets may be defined.
+By default the printable ASCII character set (ordinal values 32 to 126
+inclusive) is supported (i.e. not including control characters). Command line
+arguments can modify this range as required to specify arbitrary sets of
+Unicode characters. Non-English and non-contiguous character sets may be
+defined.
 
 Further arguments ensure that the byte contents and layout are correct for the
 target display hardware. Their usage should be specified in the documentation
@@ -55,7 +65,7 @@ Example usage to produce a file `myfont.py` with height of 23 pixels:
  32 (ASCII space).
  * -l or --largest Ordinal value of largest character to be stored. Default 126.
  * -e or --errchar Ordinal value of character to be rendered if an attempt is
- made to display an out-of-range character. Default 63 (ASCII "?").
+ made to display an out-of-range character. Default 63 (ord("?")).
  * -i or --iterate Specialist use. See below.
  * -c or --charset Option to restrict the characters in the font to a specific
  set. See below.
@@ -63,8 +73,8 @@ Example usage to produce a file `myfont.py` with height of 23 pixels:
  for alternative character sets such as Cyrillic: the file must contain the
  character set to be included. An example file is `cyrillic`. Another is 
  `extended` which adds unicode characters "° μ π ω ϕ θ α β γ δ λ Ω" to those
- with `ord` values from 32-128. Such files will only produce useful results if
- the font file includes them.
+ with `ord` values from 32-126. Such files will only produce useful results if
+ the source font file includes those glyphs.
 
 The -c option may be used to reduce the size of the font file by limiting the
 character set. If the font file is frozen as bytecode this will not reduce RAM
@@ -76,22 +86,21 @@ $ font_to_py.py Arial.ttf 20 arial_clock.py -c 1234567890:
 Example usage with the -k option:  
 ```shell
 font_to_py.py FreeSans.ttf 20 freesans_cyr_20.py -k cyrillic
+font_to_py.py -x -k extended FreeSans.ttf 17 font10.py
 ```
 
-If a character set is specified, `--smallest` and `--largest` should not be
-specified: these values are computed from the character set.
-
-The representation of non-contiguous character sets having large gaps (such as
-the `extended` set) is not very efficient. This matters little if the font is
-to be frozen as bytecode. I plan to investigate ways of improving this.
+If a character set is specified via `-c` or `-k`, then `--smallest` and
+`--largest` should not be specified: these values are computed from the
+character set.
 
 Any requirement for arguments -xr will be specified in the device driver
 documentation. Bit reversal is required by some display hardware.
 
-There have been reports that producing extended ASCII characters (ordinal
-value > 127) from ttf files is unreliable. If the expected results are not
-achieved, use an otf font. However I have successfully created the Cyrillic
-font from a `ttf`. Perhaps not all fonts are created equal...
+There have been reports that producing fonts with Unicode characters outside
+the ASCII set from ttf files is unreliable. If expected results are not
+achieved, use an otf font. I have successfully created Cyrillic and extended
+fonts from a `ttf`, so I suspect the issue may be source fonts lacking the
+required glyphs.
 
 The `-i` or `--iterate` argument. For specialist applications. Specifying this
 causes a generator function `glyphs` to be included in the Python font file. A
@@ -153,7 +162,7 @@ My solution draws on the excellent example code written by Daniel Bader. This
 may be viewed [here](https://dbader.org/blog/monochrome-font-rendering-with-freetype-and-python)
 and [here](https://gist.github.com/dbader/5488053).
 
-# Appendix: RAM utilisation Test Results
+# Appendix 1: RAM utilisation Test Results
 
 The supplied `freesans20.py` and `courier20.py` files were frozen as bytecode
 on a Pyboard V1.0. The following code was pasted at the REPL:
@@ -197,3 +206,16 @@ reclaimed on exit from the function. Its additional RAM use was 16 bytes.
 With a font of height 20 pixels RAM saving was an order of magnitude. The
 saving will be greater if larger fonts are used as RAM usage is independent of
 the array sizes.
+
+# Appendix 2: room for improvement
+
+The representation of non-contiguous character sets having large gaps (such as
+the `extended` set) is not very efficient. This is because the index table
+becomes sparse. This matters little if the font is to be frozen as bytecode
+because the index is located in Flash rather than RAM.
+
+I have implemented a change which removes redundancy in the index file. Further
+improvements would require a further level of indirection which would have the
+drawback of increasing the size of small contiguous character sets - or
+emitting two file formats with the same API. The latter does not appeal from a
+support perspective.
