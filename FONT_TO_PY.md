@@ -5,12 +5,12 @@ is to save RAM on resource-limited targets: the font file may be incorporated
 into a firmware build such that it occupies flash memory rather than scarce
 RAM. Python code built into firmware is known as frozen bytecode.
 
-## V0.27/0.28 notes
+## V0.3 notes
 
-7 Sept 2019
+8 Sept 2019
 
-Remove redundancy from index file: significantly reduces file size for sparse
-fonts. Add a comment field in the output file showing creation command line.
+Remove redundancy from index file. Emit extra index for sparse fonts, reducing
+code size. Add comment field in the output file showing creation command line.
 Repo includes the file `extended`. This facilitates creating fonts comprising
 the printable ASCII set plus `°μπωϕθαβγδλΩ`. Improvements to `font_test.py`.
 
@@ -207,15 +207,19 @@ With a font of height 20 pixels RAM saving was an order of magnitude. The
 saving will be greater if larger fonts are used as RAM usage is independent of
 the array sizes.
 
-# Appendix 2: room for improvement
+# Appendix 2: Recent improvements
 
-The representation of non-contiguous character sets having large gaps (such as
-the `extended` set) is not very efficient. This is because the index table
-becomes sparse. This matters little if the font is to be frozen as bytecode
-because the index is located in Flash rather than RAM.
+The representation of non-contiguous character sets such as the `extended` set
+presents a challenge because the ordinal values of the Unicode characters can
+be expected to span a range much greater than the number of characters in the
+set. Using an index of the type used for the ASCII set would be inefficient as
+most of the elements would be null (pointing to the default character).
 
-I have implemented a change which removes redundancy in the index file. Further
-improvements would require a further level of indirection which would have the
-drawback of increasing the size of small contiguous character sets - or
-emitting two file formats with the same API. The latter does not appeal from a
-support perspective.
+The code now behaves as follows. If the character set contains no more than 95
+characters (including the default) the emitted Python file is as before. This
+keeps the code small and efficient for the common (default) case).
+
+Larger character sets are assumed to be sparse. Characters with ordinal values
+which place them in the first 95 characters are looked up using the normal
+index. Those above use an index optimised for sparse values and a binary search
+algorithm.
