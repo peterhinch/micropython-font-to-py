@@ -1,18 +1,28 @@
 # font_to_py.py
 
-Convert a font file to Python source code. The principal reason for doing this
-is to save RAM on resource-limited targets: the font file may be incorporated
-into a firmware build such that it occupies flash memory rather than scarce
-RAM. Python code built into firmware is known as frozen bytecode.
+Convert a font file to Python source code. Python font files provide a much
+faster way to access glyphs than the principal alternative which is a random
+access file on the filesystem.
+
+Another benefit is that they can save large amounts of RAM on resource-limited
+targets: the font file may be incorporated into a firmware build such that it
+occupies flash memory rather than scarce RAM. Python code built into firmware
+is known as frozen bytecode.
 
 ## V0.3 notes
 
 8 Sept 2019
 
-Remove redundancy from index file. Emit extra index for sparse fonts, reducing
-code size. Add comment field in the output file showing creation command line.
-Repo includes the file `extended`. This facilitates creating fonts comprising
-the printable ASCII set plus `°μπωϕθαβγδλΩ`. Improvements to `font_test.py`.
+ 1. Reduced output file size for sparse fonts. These result from large gaps
+ between ordinal values of Unicode characters not in the standard ASCII set.
+ 2. Output file has comment showing creation command line.
+ 3. Repo includes the file `extended`. Using `-k extended` creates fonts
+ comprising the printable ASCII set plus `°μπωϕθαβγδλΩ`. Such a font has 95
+ chars having ordinal values from 32-981.
+ 4. Improvements to `font_test.py`.
+
+Python files produced are interchangeable with those from prior versions: the
+API is unchanged.
 
 ###### [Main README](./README.md)
 
@@ -44,9 +54,11 @@ Further arguments ensure that the byte contents and layout are correct for the
 target display hardware. Their usage should be specified in the documentation
 for the device driver.
 
-Example usage to produce a file `myfont.py` with height of 23 pixels:  
-`font_to_py.py FreeSans.ttf 23 myfont.py`
-
+Examples of usage to produce a file `myfont.py` with height of 23 pixels:
+```shell
+$ font_to_py.py FreeSans.ttf 23 myfont.py
+$ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
+```
 ## Arguments
 
 ### Mandatory positional arguments:
@@ -72,9 +84,10 @@ Example usage to produce a file `myfont.py` with height of 23 pixels:
  * -k or --charset_file Obtain the character set from a file. Typical use is
  for alternative character sets such as Cyrillic: the file must contain the
  character set to be included. An example file is `cyrillic`. Another is 
- `extended` which adds unicode characters "° μ π ω ϕ θ α β γ δ λ Ω" to those
- with `ord` values from 32-126. Such files will only produce useful results if
- the source font file includes those glyphs.
+ `extended` which adds unicode characters `°μπωϕθαβγδλΩ` to those in the
+ original ASCII set of printable characters. At risk of stating the obvious
+ this will only produce useful results if the source font file includes all
+ specified glyphs.
 
 The -c option may be used to reduce the size of the font file by limiting the
 character set. If the font file is frozen as bytecode this will not reduce RAM
@@ -194,12 +207,14 @@ print(len(freesans20._font) + len(freesans20._index))
 
 The memory used was 1712, 2032, 2384 and 2416 bytes. As increments over the
 prior state this corresponds to 320, 352 and 32 bytes. The `print` statement
-shows the RAM which would be consumed by the data arrays: this was 3956 bytes
-for `freesans20`.
+shows the RAM which would be consumed by the data arrays if they were not
+frozen: this was 3956 bytes for `freesans20`.
 
 The `foo()` function emulates the behaviour of a device driver in rendering a
 character to a display. The local variables constitute memory which is
 reclaimed on exit from the function. Its additional RAM use was 16 bytes.
+
+Similar figures were found in recent (2019) testing on a Pyboard D.
 
 ## Conclusion
 
