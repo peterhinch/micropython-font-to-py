@@ -54,7 +54,7 @@ Further arguments ensure that the byte contents and layout are correct for the
 target display hardware. Their usage should be specified in the documentation
 for the device driver.
 
-Examples of usage to produce a file `myfont.py` with height of 23 pixels:
+Examples of usage to produce Python fonts with a height of 23 pixels:
 ```shell
 $ font_to_py.py FreeSans.ttf 23 myfont.py
 $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
@@ -65,7 +65,8 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
 
  1. Font file path. Must be a ttf or otf file.
  2. Height in pixels.
- 3. Output file path. Filename must have a .py extension.
+ 3. Output file path. Filename must have a .py extension (unless writing a
+ binary font).
 
 ### Optional arguments:
 
@@ -157,11 +158,11 @@ time is slow.
 
 Binary files currently support only the standard ASCII character set. There is
 no error character: the device driver must ensure that seeks are within range.
-Consequently the following arguments are invalid:
+Only the following optional arguments are valid:
 
- * -s or --smallest
- * -l or --largest
- * -e or --errchar
+ * -f or --fixed.
+ * -x or --xmap.
+ * -r or --reverse.
 
 # Dependencies, links and licence
 
@@ -234,7 +235,5 @@ The code now behaves as follows. If the character set contains no more than 95
 characters (including the default) the emitted Python file is as before. This
 keeps the code small and efficient for the common (default) case).
 
-Larger character sets are assumed to be sparse. Characters with ordinal values
-which place them in the first 95 characters are looked up using the normal
-index. Those above use an index optimised for sparse values and a binary search
-algorithm.
+Larger character sets are assumed to be sparse and the emitted code uses an
+index optimised for sparse values and a binary search algorithm.
