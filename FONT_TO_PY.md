@@ -11,8 +11,8 @@ RAM. Python code built into firmware is known as frozen bytecode.
 
 Remove redundancy from index file: significantly reduces file size for sparse
 fonts. Add a comment field in the output file showing creation command line.
-Repo includes the file `extended`. This facilitates creating fonts with useful
-scientific glyphs. Improvements to `font_test.py`.
+Repo includes the file `extended`. This facilitates creating fonts comprising
+the printable ASCII set plus `°μπωϕθαβγδλΩ`. Improvements to `font_test.py`.
 
 ###### [Main README](./README.md)
 
