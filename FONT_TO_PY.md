@@ -233,7 +233,7 @@ most of the elements would be null (pointing to the default character).
 
 The code now behaves as follows. If the character set contains no more than 95
 characters (including the default) the emitted Python file is as before. This
-keeps the code small and efficient for the common (default) case).
+keeps the code small and efficient for the common (default) case.
 
 Larger character sets are assumed to be sparse and the emitted code uses an
 index optimised for sparse values and a binary search algorithm.
