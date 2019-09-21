@@ -9,17 +9,18 @@ targets: the font file may be incorporated into a firmware build such that it
 occupies flash memory rather than scarce RAM. Python code built into firmware
 is known as frozen bytecode.
 
-## V0.31 notes
+## V0.32 notes
 
-10 Sept 2019
+21 Sept 2019
 
  1. Reduced output file size for sparse fonts. These result from large gaps
  between ordinal values of Unicode characters not in the standard ASCII set.
  2. Output file has comment showing creation command line.
  3. Repo includes the file `extended`. Using `-k extended` creates fonts
- comprising the printable ASCII set plus `°μπωϕθαβγδλΩ`. Such a font has 95
+ comprising the printable ASCII set plus `°μπωϕθαβγδλΩ£`. Such a font has 96
  chars having ordinal values from 32-981.
  4. Improvements to `font_test.py`.
+ 5. Code emitted for sparse fonts now uses non-recursive search algorithm.
 
 Python files produced are interchangeable with those from prior versions: the
 API is unchanged.
