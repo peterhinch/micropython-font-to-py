@@ -14,6 +14,7 @@ is known as frozen bytecode.
 17 Oct 2019 V0.33 With thanks to Stephen Irons (@ironss).
  1. Fix bug where input rather than output filename was checked.
  2. Add `baseline()` to ouput file returning the maximum descent.
+ 3. Correct left position of rendered glyph.
 
 21 Sept 2019 V0.22
 
