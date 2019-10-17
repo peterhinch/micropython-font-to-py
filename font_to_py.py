@@ -6,6 +6,7 @@
 
 # Some code adapted from Daniel Bader's work at the following URL
 # http://dbader.org/blog/monochrome-font-rendering-with-freetype-and-python
+# With thanks to Stephen Irons @ironss for fix for leading left pixels.
 
 # The MIT License (MIT)
 #
@@ -111,10 +112,10 @@ class Bitmap(object):
             print()
         print()
 
-    def bitblt(self, src, row):
+    def bitblt(self, src, top, left):
         """Copy all pixels from `src` into this bitmap"""
         srcpixel = 0
-        dstpixel = row * self.width
+        dstpixel = top * self.width + left
         row_offset = self.width - src.width
 
         for _ in range(src.height):
@@ -166,12 +167,13 @@ class Bitmap(object):
 
 
 class Glyph(object):
-    def __init__(self, pixels, width, height, top, advance_width):
+    def __init__(self, pixels, width, height, top, left, advance_width):
         self.bitmap = Bitmap(width, height, pixels)
 
         # The glyph bitmap's top-side bearing, i.e. the vertical distance from
         # the baseline to the bitmap's top-most scanline.
         self.top = top
+        self.left = left
 
         # Ascent and descent determine how many pixels the glyph extends
         # above or below the baseline.
@@ -197,12 +199,13 @@ class Glyph(object):
         pixels = Glyph.unpack_mono_bitmap(slot.bitmap)
         width, height = slot.bitmap.width, slot.bitmap.rows
         top = slot.bitmap_top
+        left = slot.bitmap_left
 
         # The advance width is given in FreeType's 26.6 fixed point format,
         # which means that the pixel values are multiples of 64.
         advance_width = slot.advance.x / 64
 
-        return Glyph(pixels, width, height, top, advance_width)
+        return Glyph(pixels, width, height, top, left, advance_width)
 
     @staticmethod
     def unpack_mono_bitmap(bitmap):
@@ -335,7 +338,7 @@ class Font(dict):
             # The vertical drawing position should place the glyph
             # on the baseline as intended.
             row = self.height - int(glyph.ascent) - self._max_descent
-            outbuffer.bitblt(glyph.bitmap, row)
+            outbuffer.bitblt(glyph.bitmap, row, glyph.left)
             self[char] = [outbuffer, width, char_width]
 
     def stream_char(self, char, hmap, reverse):
