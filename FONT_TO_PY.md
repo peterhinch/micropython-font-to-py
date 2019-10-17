@@ -9,9 +9,13 @@ targets: the font file may be incorporated into a firmware build such that it
 occupies flash memory rather than scarce RAM. Python code built into firmware
 is known as frozen bytecode.
 
-## V0.32 notes
+## Recent revisions
 
-21 Sept 2019
+17 Oct 2019 V0.33 With thanks to Stephen Irons (@ironss).
+ 1. Fix bug where input rather than output filename was checked.
+ 2. Add `baseline()` to ouput file returning the maximum descent.
+
+21 Sept 2019 V0.22
 
  1. Reduced output file size for sparse fonts. These result from large gaps
  between ordinal values of Unicode characters not in the standard ASCII set.
