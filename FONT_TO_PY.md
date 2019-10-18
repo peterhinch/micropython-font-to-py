@@ -13,7 +13,7 @@ is known as frozen bytecode.
 
 17 Oct 2019 V0.33 With thanks to Stephen Irons (@ironss).
  1. Fix bug where input rather than output filename was checked.
- 2. Add `baseline()` to ouput file returning the maximum descent.
+ 2. Add `baseline()` to ouput file returning the maximum ascent.
  3. Correct left position of rendered glyph.
 
 21 Sept 2019 V0.22
@@ -116,6 +116,10 @@ character set.
 Any requirement for arguments -xr will be specified in the device driver
 documentation. Bit reversal is required by some display hardware.
 
+Using the -f argument with a variable pitch source font will produce a fixed
+pitch result. A better apearance would be achieved by using a font designed as
+monospaced.
+
 There have been reports that producing fonts with Unicode characters outside
 the ASCII set from ttf files is unreliable. If expected results are not
 achieved, use an otf font. I have successfully created Cyrillic and extended
@@ -149,6 +153,26 @@ The `myfont` module name will then be used to instantiate a `Writer` object
 to render strings on demand. A practical example may be studied
 [here](./writer/writer_demo.py).
 The detailed layout of the Python file may be seen [here](./writer/DRIVERS.md).
+
+### Python font files
+
+These start with a comment which is the command line used to create the font.
+
+They include the following functions:
+ 1. `height()` Height of bitmaps in pixels (all are the same height).
+ 2. `max_width()` Width of widest glyph in pixels.
+ 3. `baseline()` Offset from top of the bitmap to the baseline. This is a
+ notional "ruler line" where glyphs are drawn. Enables rendering different
+ fonts on a common baseline. It is a positive number of pixels.
+ 4. `hmap()` `True` if bitmaps are horizonataly mapped.
+ 5. `reverse()` `True` if bit reversal is used.
+ 6. `monospaced()` `True` if bitmaps were created with fixed pitch.
+ 7. `min_ch()` Returns smallest ordinal value in font.
+ 8. `max_ch()` Largest ordinal value in font.
+ 9. `get_ch()` Arg: a Unicode character. Returns three items:
+   1. A memoryview into the bitmap for that character.  
+   2. Bitmap height in pixels. Equal to `height()` above.  
+   3. Bitmap width in pixels.  
 
 ### Binary font files
 

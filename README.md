@@ -45,8 +45,8 @@ This comprises three components, links to docs below:
 
 This command line utility is written in Python 3 and runs on a PC. It takes
 as input a font file in `ttf` or `otf` form together with a height in pixels
-and outputs a Python source file containing the font data. Fixed and variable
-pitch rendering are supported. The design has the following aims:
+and outputs a Python source file containing the font as a bitmap. Fixed and
+variable pitch rendering are supported. The design has the following aims:
 
  * Independence of specific display hardware.
  * The path from font file to Python code to be fully open source.
@@ -71,35 +71,36 @@ size.
 
 By default the `font_to_py.py` utility produces the ASCII character set from
 `chr(32)` to `chr(126)` inclusive. Command line options enable the character
-set to be modified to include extended ASCII. Alternative sets may be specified
-such as non-English languages or limited, non-contiguous sets for specialist
-applications.
+set to be modified to include arbitrary Unicode characters. Alternative sets
+may be specified such as for non-English languages. Efficient support is now
+provided for sparse character sets.
 
 # Font file interface
 
-A font file is imported in the usual way e.g. `import font14`. It contains
-the following methods which return values defined by the arguments which were
-provided to `font_to_py.py`:
+A font file is imported in the usual way e.g. `import font14`. Python font
+files contain the following functions. These return values defined by the
+arguments which were provided to `font_to_py.py`:
 
 `height` Returns height in pixels.  
 `max_width` Returns maximum width of a glyph in pixels.  
+`baseline` Offset from top of glyph to the baseline.  
 `hmap` Returns `True` if font is horizontally mapped.  
 `reverse` Returns `True` if bit reversal was specified.  
 `monospaced` Returns `True` if monospaced rendering was specified.  
 `min_ch` Returns the ordinal value of the lowest character in the file.  
 `max_ch` Returns the ordinal value of the highest character in the file.
 
-Glyphs are returned with the `get_ch` method. Its argument is a character
-and it returns the following values:
+Glyphs are returned with the `get_ch` function. Its argument is a Unicode
+character and it returns the following values:
 
- * A `memoryview` object containg the glyph bytes.
+ * A `memoryview` object containing the glyph bytes.
  * The height in pixels.
  * The character width in pixels.
 
 The `font_to_py.py` utility allows a default glyph to be specified (typically
 `?`). If called with an undefined character, this glyph will be returned.
 
-The `min_ch` and `max_ch` methods are mainly relevant to contiguous character
+The `min_ch` and `max_ch` functions are mainly relevant to contiguous character
 sets.
 
 # Licence
