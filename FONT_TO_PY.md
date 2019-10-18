@@ -169,7 +169,7 @@ They include the following functions:
  6. `monospaced()` `True` if bitmaps were created with fixed pitch.
  7. `min_ch()` Returns smallest ordinal value in font.
  8. `max_ch()` Largest ordinal value in font.
- 9. `get_ch()` Arg: a Unicode character. Returns three items:
+ 9. `get_ch()` Arg: a Unicode character. Returns three items:  
  A memoryview into the bitmap for that character.  
  Bitmap height in pixels. Equal to `height()` above.  
  Bitmap width in pixels.  
