@@ -170,9 +170,9 @@ They include the following functions:
  7. `min_ch()` Returns smallest ordinal value in font.
  8. `max_ch()` Largest ordinal value in font.
  9. `get_ch()` Arg: a Unicode character. Returns three items:
-   1. A memoryview into the bitmap for that character.  
-   2. Bitmap height in pixels. Equal to `height()` above.  
-   3. Bitmap width in pixels.  
+ A memoryview into the bitmap for that character.  
+ Bitmap height in pixels. Equal to `height()` above.  
+ Bitmap width in pixels.  
 
 ### Binary font files
 
