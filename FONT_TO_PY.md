@@ -174,6 +174,9 @@ They include the following functions:
  Bitmap height in pixels. Equal to `height()` above.  
  Bitmap width in pixels.  
 
+See [this link](https://stackoverflow.com/questions/27631736/meaning-of-top-ascent-baseline-descent-bottom-and-leading-in-androids-font)
+for an explanation of `baseline`.
+
 ### Binary font files
 
 There is an option to create a binary font file, specified with a `-b` or
