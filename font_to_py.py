@@ -331,14 +331,23 @@ class Font(dict):
     def _assign_values(self):
         for char in self.keys():
             glyph = self._glyph_for_character(char)
-            char_width = int(max(glyph.width, glyph.advance_width))  # Actual width
+            # https://github.com/peterhinch/micropython-font-to-py/issues/21
+            # Handle negative glyph.left correctly (capital J), 
+            # also glyph.width > advance (capital K and R).
+            if glyph.left >= 0:
+                char_width = int(max(glyph.advance_width, glyph.width + glyph.left))
+                left = glyph.left
+            else:
+                char_width = int(max(glyph.advance_width - glyph.left, glyph.width))
+                left = 0
+
             width = self.width if self.width else char_width  # Space required if monospaced
             outbuffer = Bitmap(width, self.height)
 
             # The vertical drawing position should place the glyph
             # on the baseline as intended.
             row = self.height - int(glyph.ascent) - self._max_descent
-            outbuffer.bitblt(glyph.bitmap, row, glyph.left)
+            outbuffer.bitblt(glyph.bitmap, row, left)
             self[char] = [outbuffer, width, char_width]
 
     def stream_char(self, char, hmap, reverse):
@@ -649,7 +658,9 @@ if __name__ == "__main__":
                 sys.exit(1)
         else:
             cset = args.charset
-        cs = {c for c in cset if c.isprintable()} - {args.errchar}  # dedupe and remove default char
+        # dedupe and remove default char. Allow chars in private use area.
+        # https://github.com/peterhinch/micropython-font-to-py/issues/22
+        cs = {c for c in cset if c.isprintable() or (0xE000 <= ord(c) <= 0xF8FF) } - {args.errchar}
         cs = sorted(list(cs))
         cset = ''.join(cs)  # Back to string
         print('Writing Python font file.')
