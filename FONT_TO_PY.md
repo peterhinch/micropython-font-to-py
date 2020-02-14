@@ -274,11 +274,12 @@ index optimised for sparse values and a binary search algorithm.
 # Appendix 3: font_test.py
 
 This enables a Python font file to be described and rendered at the command
-prompt. It provides a useful way of checking unknown font files.
+prompt. It provides a useful way of checking unknown font files. Compatibility
+with files created by old versions of `font_to_py` is not guaranteed.
 
-It runs under Python 3.2 or above. If you created a font `myfont.py` the
-following will render the supplied string (assuming that `font_test.py` has
-executable privilege):
+It runs under Python 3.2 or above. Given a font `myfont.py` the following will
+render the supplied string (assuming that `font_test.py` has executable
+privilege):
 
 ```bash
 ./font_test myfont Hello
