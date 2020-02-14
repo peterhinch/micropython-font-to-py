@@ -73,66 +73,6 @@ def render_row_vmap(data, row, height, width, reverse):
         print(char, end='')
 
 
-def display(data, hmap, height, width, reverse):
-    bpr = (width - 1)//8 + 1
-    bpc = (height - 1)//8 + 1
-    print('Height: {} Width: {}'.format(height, width))
-    print('Bytes/row: {} Bytes/col: {}'.format(bpr, bpc))
-    print('Data length: {}'.format(len(data)))
-    # Check bytearray is the correct length
-    if hmap:
-        validate_hmap(data, height, width)
-    else:
-        validate_vmap(data, height, width)
-
-    for row in range(height):
-        if hmap:
-            render_row_hmap(data, row, height, width, reverse)
-        else:
-            render_row_vmap(data, row, height, width, reverse)
-        print()
-
-
-# TESTS: in order of code coverage
-# Basic test of Font class functionality
-# Usage font_test.font_test()
-def font_test():
-    fnt = Font('FreeSans.ttf', 20)
-    for char in 'WM_eg!.,':
-        fnt[char][0].display()
-    print(fnt.width)
-
-# Font character streaming
-# Usage font_test.test_stream('abc', 20, False, False, False)
-def test_stream(string, height, monospaced, hmap, reverse):
-    fnt = Font("FreeSans.ttf", height, monospaced)
-    height = fnt.height
-    for char in string:
-        width = fnt[char][1]
-        data = bytearray(fnt.stream_char(char, hmap, reverse))
-        display(data, hmap, height, width, reverse)
-
-
-def chr_addr(index, ordch):
-    offset = 2 * (ordch - 32)
-    return int.from_bytes(index[offset:offset + 2], 'little')
-
-
-# Font.build_arrays
-# Usage font_test.test_arrays('abc', 20, False, False, False)
-def test_arrays(string, height, monospaced, hmap, reverse):
-    fnt = Font("FreeSans.ttf", height, monospaced)
-    height = fnt.height
-    data, index = fnt.build_arrays(hmap, reverse)
-    for char in string:
-        ordch = ord(char)
-        offset = chr_addr(index, ordch)
-        width = int.from_bytes(data[offset:offset + 2], 'little')
-        offset += 2
-        next_offs = chr_addr(index, ordch + 1)
-        display(data[offset:next_offs], hmap, height, width, reverse)
-
-
 # Render a string to REPL using a specified Python font file
 # usage font_test.test_font('freeserif', 'abc')
 # Default tests outliers with fonts created with -k extended
@@ -157,27 +97,20 @@ def test_font(fontfile, string='abg'+chr(126)+chr(127)+chr(176)+chr(177)+chr(937
                 render_row_vmap(data, row, height, width, myfont.reverse())
         print()
 
+usage = '''Usage:
+./font_test fontfile string
+fontfile is a Python font file name with the .py extension omitted.
+string is an optional string to render.
+If string is omitted a challenging test string will be rendered. This
+is for fonts created with -k extended. Other fonts will show "?" for
+nonexistent glyphs.
+Requires Python 3.2 or newer.
+'''
 
-# Create font file, render a string to REPL using it
-# usage font_test.test_file('FreeSans.ttf', 20, 'xyz')
-def test_file(fontfile, height, string, *, minchar=32, maxchar=126, defchar=ord('?'),
-              fixed=False, hmap=False, reverse=False):
-    if not write_font('myfont.py', fontfile, height, fixed,
-                      hmap, reverse, minchar, maxchar, defchar):
-        print('Failed to create font file.')
-        return
-
-    if 'myfont' in sys.modules:
-        del sys.modules['myfont']  # force reload
-    import myfont
-
-    height = myfont.height()
-    for row in range(height):
-        for char in string:
-            data, _, width = myfont.get_ch(char)
-            if myfont.hmap():
-                render_row_hmap(data, row, height, width, myfont.reverse())
-            else:
-                render_row_vmap(data, row, height, width, myfont.reverse())
-        print()
-    os.unlink('myfont.py')
+if __name__ == "__main__":
+    if len(sys.argv) < 2 or sys.argv[1] == '--help':
+        print(usage)
+    elif len(sys.argv) == 2:
+        test_font(sys.argv[1])
+    else:
+        test_font(sys.argv[1], sys.argv[2])

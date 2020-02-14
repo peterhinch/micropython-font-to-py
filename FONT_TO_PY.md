@@ -270,3 +270,54 @@ keeps the code small and efficient for the common (default) case.
 
 Larger character sets are assumed to be sparse and the emitted code uses an
 index optimised for sparse values and a binary search algorithm.
+
+# Appendix 3: font_test.py
+
+This enables a Python font file to be described and rendered at the command
+prompt. It provides a useful way of checking unknown font files.
+
+It runs under Python 3.2 or above. If you created a font `myfont.py` the
+following will render the supplied string (assuming that `font_test.py` has
+executable privilege):
+
+```bash
+./font_test myfont Hello
+```
+Omitting arguments (or supplying `--help`) will provide usage information.
+
+If no string is provided a default will be printed. This is designed to test
+fonts created with `-k extended`. Other fonts will show `?` characters for
+missing glyphs.
+
+Sample output:
+```bash
+$ ./font_test.py freesans1 Hello
+Vertical map
+Normal bit order
+Proportional spacing
+Dimensions height*max_width 23 * 23
+Start char " " (ord 32) end char "~" (ord 126)
+...................................................
+##.........##................##...##...............
+##.........##................##...##...............
+##.........##................##...##...............
+##.........##................##...##...............
+##.........##................##...##...............
+##.........##.......#####....##...##......#####....
+##.........##......#######...##...##.....#######...
+#############.....###....##..##...##....###...###..
+#############....###......##.##...##...###.....###.
+##.........##....##.......##.##...##...##.......##.
+##.........##....###########.##...##...##.......##.
+##.........##....###########.##...##...##.......##.
+##.........##....##..........##...##...##.......##.
+##.........##....##.......##.##...##...###.....###.
+##.........##.....##.....##..##...##....###...###..
+##.........##......########..##...##.....#######...
+##.........##.......#####....##...##......#####....
+...................................................
+...................................................
+...................................................
+...................................................
+...................................................
+```
