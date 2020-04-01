@@ -126,7 +126,7 @@ class Bitmap(object):
             dstpixel += row_offset
 
     # Horizontal mapping generator function
-    def get_hbyte(self, reverse):
+    def get_hbyte(self, reverse, invert):
         for row in range(self.height):
             col = 0
             while True:
@@ -142,11 +142,14 @@ class Bitmap(object):
                         # Normal map MSB of byte 0 is (0, 0)
                         byte |= self.pixels[row * self.width + col] << (7 - bit)
                 if bit == 7:
-                    yield byte
+                    if invert:
+                        yield 0xFF - byte
+                    else:
+                        yield byte
                 col += 1
 
     # Vertical mapping
-    def get_vbyte(self, reverse):
+    def get_vbyte(self, reverse, invert):
         for col in range(self.width):
             row = 0
             while True:
@@ -162,7 +165,10 @@ class Bitmap(object):
                         # Normal map MSB of byte 0 is (0, 7)
                         byte |= self.pixels[row * self.width + col] << bit
                 if bit == 7:
-                    yield byte
+                    if invert:
+                        yield 0xFF - byte
+                    else:
+                        yield byte
                 row += 1
 
 
@@ -332,7 +338,7 @@ class Font(dict):
         for char in self.keys():
             glyph = self._glyph_for_character(char)
             # https://github.com/peterhinch/micropython-font-to-py/issues/21
-            # Handle negative glyph.left correctly (capital J), 
+            # Handle negative glyph.left correctly (capital J),
             # also glyph.width > advance (capital K and R).
             if glyph.left >= 0:
                 char_width = int(max(glyph.advance_width, glyph.width + glyph.left))
@@ -350,22 +356,22 @@ class Font(dict):
             outbuffer.bitblt(glyph.bitmap, row, left)
             self[char] = [outbuffer, width, char_width]
 
-    def stream_char(self, char, hmap, reverse):
+    def stream_char(self, char, hmap, reverse, invert):
         outbuffer, _, _ = self[char]
         if hmap:
-            gen = outbuffer.get_hbyte(reverse)
+            gen = outbuffer.get_hbyte(reverse, invert)
         else:
-            gen = outbuffer.get_vbyte(reverse)
+            gen = outbuffer.get_vbyte(reverse, invert)
         yield from gen
 
-    def build_arrays(self, hmap, reverse):
+    def build_arrays(self, hmap, reverse, invert):
         data = bytearray()
         index = bytearray()
         sparse = bytearray()
         def append_data(data, char):
             width = self[char][1]
             data += (width).to_bytes(2, byteorder='little')
-            data += bytearray(self.stream_char(char, hmap, reverse))
+            data += bytearray(self.stream_char(char, hmap, reverse, invert))
 
         # self.charset is contiguous with chars having ordinal values in the
         # inclusive range specified. Where the specified character set has gaps
@@ -391,12 +397,12 @@ class Font(dict):
                 append_data(data, char)
         return data, index, sparse
 
-    def build_binary_array(self, hmap, reverse, sig):
+    def build_binary_array(self, hmap, reverse, invert, sig):
         data = bytearray((0x3f + sig, 0xe7, self.max_width, self.height))
         for char in self.charset:
             width = self[char][2]
             data += bytes((width,))
-            data += bytearray(self.stream_char(char, hmap, reverse))
+            data += bytearray(self.stream_char(char, hmap, reverse, invert))
         return data
 
 # PYTHON FILE WRITING
@@ -447,14 +453,14 @@ def get_ch(ch):
 STR02H ="""
     next_offs = doff + 2 + ((width - 1)//8 + 1) * {0}
     return _mvfont[doff + 2:next_offs], {0}, width
- 
+
 """
 
 # Code emitted for vertically mapped fonts.
 STR02V ="""
     next_offs = doff + 2 + (({0} - 1)//8 + 1) * width
     return _mvfont[doff + 2:next_offs], {0}, width
- 
+
 """
 
 # Extra code emitted where -i is specified.
@@ -468,7 +474,7 @@ def glyphs():
 def write_func(stream, name, arg):
     stream.write('def {}():\n    return {}\n\n'.format(name, arg))
 
-def write_font(op_path, font_path, height, monospaced, hmap, reverse, minchar, maxchar, defchar, charset, iterate):
+def write_font(op_path, font_path, height, monospaced, hmap, reverse, invert, minchar, maxchar, defchar, charset, iterate):
     try:
         fnt = Font(font_path, height, minchar, maxchar, monospaced, defchar, charset)
     except freetype.ft_errors.FT_Exception:
@@ -476,13 +482,13 @@ def write_font(op_path, font_path, height, monospaced, hmap, reverse, minchar, m
         return False
     try:
         with open(op_path, 'w', encoding='utf-8') as stream:
-            write_data(stream, fnt, font_path, hmap, reverse, iterate, charset)
+            write_data(stream, fnt, font_path, hmap, reverse, invert, iterate, charset)
     except OSError:
         print("Can't open", op_path, 'for writing')
         return False
     return True
 
-def write_data(stream, fnt, font_path, hmap, reverse, iterate, charset):
+def write_data(stream, fnt, font_path, hmap, reverse, invert, iterate, charset):
     height = fnt.height  # Actual height, not target height
     minchar = min(fnt.crange)
     maxchar = max(fnt.crange)
@@ -500,7 +506,7 @@ def write_data(stream, fnt, font_path, hmap, reverse, iterate, charset):
     write_func(stream, 'max_ch', maxchar)
     if iterate:
         stream.write(STR03.format(''.join(sorted(fnt.keys()))))
-    data, index, sparse = fnt.build_arrays(hmap, reverse)
+    data, index, sparse = fnt.build_arrays(hmap, reverse, invert)
     bw_font = ByteWriter(stream, '_font')
     bw_font.odata(data)
     bw_font.eot()
@@ -525,7 +531,7 @@ def write_data(stream, fnt, font_path, hmap, reverse, iterate, charset):
 # 1    0       0x40 0xe7
 # 0    1       0x41 0xe7
 # 1    1       0x42 0xe7
-def write_binary_font(op_path, font_path, height, hmap, reverse):
+def write_binary_font(op_path, font_path, height, hmap, reverse, invert):
     try:
         fnt = Font(font_path, height, 32, 126, True, None, '')  # All chars have same width
     except freetype.ft_errors.FT_Exception:
@@ -536,7 +542,7 @@ def write_binary_font(op_path, font_path, height, hmap, reverse):
         sig += 2
     try:
         with open(op_path, 'wb') as stream:
-            data = fnt.build_binary_array(hmap, reverse, sig)
+            data = fnt.build_binary_array(hmap, reverse, invert, sig)
             stream.write(data)
     except OSError:
         print("Can't open", op_path, 'for writing')
@@ -579,6 +585,8 @@ if __name__ == "__main__":
                         help='Horizontal (x) mapping')
     parser.add_argument('-r', '--reverse', action='store_true',
                         help='Bit reversal')
+    parser.add_argument('-t', '--invert', action='store_true',
+                        help='Invert font color (white text on black background)')
     parser.add_argument('-f', '--fixed', action='store_true',
                         help='Fixed width (monospaced) font')
     parser.add_argument('-b', '--binary', action='store_true',
@@ -630,7 +638,7 @@ if __name__ == "__main__":
 
         print('Writing binary font file.')
         if not write_binary_font(args.outfile, args.infile, args.height,
-                                 args.xmap, args.reverse):
+                                 args.xmap, args.reverse, args.invert):
             sys.exit(1)
     else:
         if not os.path.splitext(args.outfile)[1].upper() == '.PY':
@@ -665,9 +673,8 @@ if __name__ == "__main__":
         cset = ''.join(cs)  # Back to string
         print('Writing Python font file.')
         if not write_font(args.outfile, args.infile, args.height, args.fixed,
-                          args.xmap, args.reverse, args.smallest, args.largest,
-                          args.errchar, cset, args.iterate):
+                          args.xmap, args.reverse, args.invert, args.smallest,
+                          args.largest, args.errchar, cset, args.iterate):
             sys.exit(1)
 
     print(args.outfile, 'written successfully.')
-

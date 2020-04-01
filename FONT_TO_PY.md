@@ -80,6 +80,7 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
  default fonts are assumed to be variable pitch.
  * -x or --xmap Specifies horizontal mapping (default is vertical).
  * -r or --reverse Specifies bit reversal in each font byte.
+ * -t or --invert Inverts the font color (white text on black background)
  * -s or --smallest Ordinal value of smallest character to be stored. Default
  32 (ASCII space).
  * -l or --largest Ordinal value of largest character to be stored. Default 126.
@@ -90,7 +91,7 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
  set. See below.
  * -k or --charset_file Obtain the character set from a file. Typical use is
  for alternative character sets such as Cyrillic: the file must contain the
- character set to be included. An example file is `cyrillic`. Another is 
+ character set to be included. An example file is `cyrillic`. Another is
  `extended` which adds unicode characters `°μπωϕθαβγδλΩ` to those in the
  original ASCII set of printable characters. At risk of stating the obvious
  this will only produce useful results if the source font file includes all
