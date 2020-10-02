@@ -253,7 +253,7 @@ rendered in foreground color on background color (or reversed if `invert` is
 ### 2.2.4 A performance boost
 
 Rendering performance of the `Cwriter` class is slow: owing to limitations in
-the `frmebuf.blit` method the class renders glyphs one pixel at a time. There
+the `framebuf.blit` method the class renders glyphs one pixel at a time. There
 is a way to improve performance. It was developed by Jim Mussared (@jimmo) and
 consists of a native C module.
 
@@ -270,7 +270,8 @@ It is suggested that moving the appropriate `framebuf_utils.mpy` to the target
 is only done once the basic operation of an application has been verified.
 
 The native module does not support the `CWriter.invert_display` option. If this
-is used, the presence of the native module will have no effect.
+is used, the presence of the native module will have no effect. The module has
+no effect on the `Writer` class which uses fast rendering by default.
 
 # 3. Notes
 
