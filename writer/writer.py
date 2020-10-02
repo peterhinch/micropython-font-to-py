@@ -1,10 +1,10 @@
 # writer.py Implements the Writer class.
-# V0.3 Peter Hinch 11th Aug 2018
+# V0.35 Peter Hinch Sept 2020 Fast rendering option for color displays
 # Handles colour, upside down diplays, word wrap and tab stops
 
 # The MIT License (MIT)
 #
-# Copyright (c) 2016 Peter Hinch
+# Copyright (c) 2016-2020 Peter Hinch
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -32,7 +32,18 @@
 # Using CWriter's slow rendering: _printchar 9.5ms typ, 13.5ms max.
 # Using Writer's fast rendering: _printchar 115μs min 480μs typ 950μs max.
 
+# CWriter on Pyboard D SF2W at standard clock rate
+# Fast method 500-600μs typical, up to 1.07ms on larger fonts
+# Revised fast method 691μs avg, up to 2.14ms on larger fonts
+# Slow method 2700μs typical, up to 11ms on larger fonts
+
 import framebuf
+try:
+    from framebuf_utils import render
+    fast_mode = True
+except ImportError:
+    fast_mode = False
+from uctypes import bytearray_at, addressof
 
 class DisplayState():
     def __init__(self):
@@ -264,19 +275,24 @@ class CWriter(Writer):
             self.fgcolor = fgcolor
         self.def_bgcolor = self.bgcolor
         self.def_fgcolor = self.fgcolor
+        fm = fast_mode and not self.usd
+        self._printchar = self._pchfast if fm else self._pchslow
+        verbose and print('Render {} using fast mode'.format('is' if fm else 'not'))
 
-    def setcolor(self, fgcolor=None, bgcolor=None):
-        if fgcolor is None and bgcolor is None:
-            self.fgcolor = self.def_fgcolor
-            self.bgcolor = self.def_bgcolor
-        else:
-            if fgcolor is not None:
-                self.fgcolor = fgcolor
-            if bgcolor is not None:
-                self.bgcolor = bgcolor
-        return self.fgcolor, self.bgcolor
+    def _pchfast(self, char, invert=False, recurse=False):
+        s = self._getstate()
+        self._get_char(char, recurse)
+        if self.glyph is None:
+            return  # All done
+        buf = bytearray_at(addressof(self.glyph), len(self.glyph))
+        fbc = framebuf.FrameBuffer(buf, self.char_width, self.char_height, self.map)
+        fgcolor = self.bgcolor if invert else self.fgcolor
+        bgcolor = self.fgcolor if invert else self.bgcolor
+        render(self.device, fbc, s.text_col, s.text_row, fgcolor, bgcolor)
+        s.text_col += self.char_width
+        self.cpos += 1
 
-    def _printchar(self, char, invert=False, recurse=False):
+    def _pchslow(self, char, invert=False, recurse=False):
         s = self._getstate()
         self._get_char(char, recurse)
         if self.glyph is None:
@@ -309,3 +325,14 @@ class CWriter(Writer):
                 break
         s.text_col += -char_width if usd else char_width
         self.cpos += 1
+
+    def setcolor(self, fgcolor=None, bgcolor=None):
+        if fgcolor is None and bgcolor is None:
+            self.fgcolor = self.def_fgcolor
+            self.bgcolor = self.def_bgcolor
+        else:
+            if fgcolor is not None:
+                self.fgcolor = fgcolor
+            if bgcolor is not None:
+                self.bgcolor = bgcolor
+        return self.fgcolor, self.bgcolor

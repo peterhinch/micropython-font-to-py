@@ -44,14 +44,15 @@ Labels and Fields (from nanogui.py).
   1.3 [Fonts](./WRITER.md#11-fonts)  
  2. [Writer and CWriter classes](./WRITER.md#2-writer-and-cwriter-classes)  
   2.1 [The Writer class](./WRITER.md#21-the-writer-class) For monochrome displays.  
-   2.1.1 [Static Method](./WRITER.md#211-static-method)  
-   2.1.2.[Constructor](./WRITER.md#212-constructor)  
-   2.1.3 [Methods](./WRITER.md#213-methods)  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.1.1 [Static Method](./WRITER.md#211-static-method)  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.1.2.[Constructor](./WRITER.md#212-constructor)  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.1.3 [Methods](./WRITER.md#213-methods)  
   2.2 [The CWriter class](./WRITER.md#22-the-cwriter-class) For colour displays
   and for upside-down rendering.  
-   2.2.1 [Static Method](./WRITER.md#221-static-method)  
-   2.2.2 [Constructor](./WRITER.md#222-constructor)  
-   2.2.3 [Methods](./WRITER.md#223-methods)  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.1 [Static Method](./WRITER.md#221-static-method)  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.2 [Constructor](./WRITER.md#222-constructor)  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.3 [Methods](./WRITER.md#223-methods)  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.4 [A performance boost](./WRITER.md#224-a-performance-boost)  
  3. [Notes](./WRITER.md#4-notes)
 
 ###### [Main README](../README.md)
@@ -80,9 +81,7 @@ very simple version still exists as `writer_minimal.py`.
 
 Tests and demos assume a 128*64 SSD1306 OLED display connected via I2C or SPI.
 Wiring is specified in `ssd1306_setup.py`. Edit this to use a different bus or
-for a non-Pyboard target. At the time of writing the default of software I2C
-should be used: the official SSD1306 driver is not compatible with hardware I2C
-(see [Notes](./WRITER.md#3-notes)).
+for a non-Pyboard target.
 
 ## 1.2 Files
 
@@ -251,6 +250,28 @@ The `printstring` method works as per the base class except that the string is
 rendered in foreground color on background color (or reversed if `invert` is
 `True`).
 
+### 2.2.4 A performance boost
+
+Rendering performance of the `Cwriter` class is slow: owing to limitations in
+the `frmebuf.blit` method the class renders glyphs one pixel at a time. There
+is a way to improve performance. It was developed by Jim Mussared (@jimmo) and
+consists of a native C module.
+
+On import, `writer.py` attempts to import a module `framebuf_utils`. If this
+succeeds (i.e. a file `framebuf_utils.mpy` is found), glyph rendering will be
+substantially faster.
+
+The directory `framebuf_utils` contains the source file, the makefile and a
+version of `framebuf_utils.mpy` for `armv7m` architecture (e.g. Pyboards).
+ESP32 users with access to the development toolchain should change `Makefile`
+to specify the `xtensawin` arch and rebuild.
+
+It is suggested that moving the appropriate `framebuf_utils.mpy` to the target
+is only done once the basic operation of an application has been verified.
+
+The native module does not support the `CWriter.invert_display` option. If this
+is used, the presence of the native module will have no effect.
+
 # 3. Notes
 
 Possible future enhancements:
@@ -259,9 +280,4 @@ Possible future enhancements:
  2. Extend word wrapping to cases where words are separated by tabs or hyphens.
  3. An asynchronous version.
 
-As stated above the official SSD1306 driver is incompatible with hardware I2C
-and this problem cannot efficiently be fixed. [PR4020](https://github.com/micropython/micropython/pull/4020)
-proposes an enhncement which will facilitate an improved SSD1306 driver capable
-of using hard or soft I2C.
- 
 ###### [Contents](./WRITER.md#contents)
