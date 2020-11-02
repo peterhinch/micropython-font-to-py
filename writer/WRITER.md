@@ -258,8 +258,10 @@ is a way to improve performance. It was developed by Jim Mussared (@jimmo) and
 consists of a native C module.
 
 On import, `writer.py` attempts to import a module `framebuf_utils`. If this
-succeeds (i.e. a file `framebuf_utils.mpy` is found), glyph rendering will be
-substantially faster.
+succeeds, glyph rendering will be substantially faster. If the file is not
+present the class will work using normal rendering. If the file exists but was
+compiled for a different architecture a warning message will be printed but the
+class will work using normal rendering.
 
 The directory `framebuf_utils` contains the source file, the makefile and a
 version of `framebuf_utils.mpy` for `armv7m` architecture (e.g. Pyboards).
@@ -272,6 +274,9 @@ is only done once the basic operation of an application has been verified.
 The native module does not support the `CWriter.invert_display` option. If this
 is used, the presence of the native module will have no effect. The module has
 no effect on the `Writer` class which uses fast rendering by default.
+
+The module has a `fast_mode` variable which is set `True` on import if the mode
+was successfully engaged. User code should treat this as read-only.
 
 # 3. Notes
 

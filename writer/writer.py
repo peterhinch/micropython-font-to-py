@@ -2,27 +2,8 @@
 # V0.35 Peter Hinch Sept 2020 Fast rendering option for color displays
 # Handles colour, upside down diplays, word wrap and tab stops
 
-# The MIT License (MIT)
-#
-# Copyright (c) 2016-2020 Peter Hinch
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
-# THE SOFTWARE.
+# Released under the MIT License (MIT). See LICENSE.
+# Copyright (c) 2019-2020 Peter Hinch
 
 # A Writer supports rendering text to a Display instance in a given font.
 # Multiple Writer instances may be created, each rendering a font to the
@@ -38,11 +19,15 @@
 # Slow method 2700μs typical, up to 11ms on larger fonts
 
 import framebuf
+fast_mode = False
 try:
     from framebuf_utils import render
     fast_mode = True
 except ImportError:
-    fast_mode = False
+    pass
+except ValueError:
+    print('Ignoring framebuf_utils.mpy: it was compiled for an incorrect architecture.')
+
 from uctypes import bytearray_at, addressof
 
 class DisplayState():
