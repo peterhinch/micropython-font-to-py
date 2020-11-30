@@ -13,6 +13,12 @@ display driver is subclassed from the `framebuf` class. Examples are:
  for STM32 (Pyboards etc) or [this one](https://github.com/peterhinch/micropython-nano-gui/blob/master/drivers/ssd1351/ssd1351_generic.py)
  for other targets.
  * The [HX1230 96x68 LCD](https://github.com/mcauser/micropython-hx1230.git).
+ * A driver for Sharp ultra low power consumption monochrome displays such as
+ [2.7 inch 400x240 pixels](https://www.adafruit.com/product/4694)
+ is [here](./drivers/sharp/README.md).
+ * Drivers for Adafruit ST7735R based TFT's: 
+ [1.8 inch](https://www.adafruit.com/product/358) and
+ [1.44 inch](https://www.adafruit.com/product/2088).
 
 Basic support is for scrolling text display using multiple fonts. The
 [nanogui](https://github.com/peterhinch/micropython-nano-gui.git) module has
