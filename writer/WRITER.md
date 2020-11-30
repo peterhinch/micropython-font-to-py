@@ -18,7 +18,8 @@ display driver is subclassed from the `framebuf` class. Examples are:
  is [here](./drivers/sharp/README.md).
  * Drivers for Adafruit ST7735R based TFT's: 
  [1.8 inch](https://www.adafruit.com/product/358) and
- [1.44 inch](https://www.adafruit.com/product/2088).
+ [1.44 inch](https://www.adafruit.com/product/2088) are
+ [here](https://github.com/peterhinch/micropython-nano-gui/tree/master/drivers/st7735r).
 
 Basic support is for scrolling text display using multiple fonts. The
 [nanogui](https://github.com/peterhinch/micropython-nano-gui.git) module has
