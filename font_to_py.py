@@ -618,7 +618,7 @@ if __name__ == "__main__":
     if not os.path.isfile(args.infile):
         quit("Font filename does not exist")
 
-    if not os.path.splitext(args.infile)[1].upper() in ('.TTF', '.OTF'):
+    if not os.path.splitext(args.infile)[1].upper() in ('.TTF', '.OTF', '.BDF'):
         quit("Font file should be a ttf or otf file.")
 
     if args.binary:
