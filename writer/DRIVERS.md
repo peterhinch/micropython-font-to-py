@@ -68,8 +68,11 @@ The latter example illustrates a very simple driver which provides full access
 to `writer.py` and `nanogui.py` libraries.
 
 Because `nanogui` uses the Writer classes, all `nanogui` drivers support code
-using `Writer` or `CWriter`.
+using `Writer` or `CWriter`. They are lightweight and provide a minimum
+functionality necessary to support these classes.
 [This is the current list](https://github.com/peterhinch/micropython-nano-gui#12-description).
+This list is more current as `nanogui` is being expanded to support a wider
+range of displays.
 
 # Drivers using the display buffer
 
