@@ -293,7 +293,10 @@ class Font(dict):
         height = required_height
         for npass in range(10):
             height += error
-            self._face.set_pixel_sizes(0, height)
+            try:
+                self._face.set_pixel_sizes(0, height)
+            except:
+                break #Avoid error with BDF files where we try to request a size that doesn't exist
             max_descent = 0
 
             # For each character in the charset string we get the glyph
@@ -571,7 +574,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(__file__, description=DESC,
                                      formatter_class=argparse.RawDescriptionHelpFormatter)
     parser.add_argument('infile', type=str, help='Input file path')
-    parser.add_argument('height', type=int, help='Font height in pixels')
+    parser.add_argument('height', type=int, help='Font height in pixels. Use 0 to autodetect for BDF files')
     parser.add_argument('outfile', type=str,
                         help='Path and name of output file')
 
@@ -664,6 +667,16 @@ if __name__ == "__main__":
         cs = sorted(list(cs))
         cset = ''.join(cs)  # Back to string
         print('Writing Python font file.')
+
+        # Automatically determine height for BDF files
+        if args.height == 0 :
+            if os.path.splitext(args.infile)[1].upper() == '.BDF' :
+                chkface = freetype.Face(args.infile)
+                args.height = chkface._get_available_sizes()[0].height
+                print("Found font with size " + str(args.height))
+            else :
+                quit("Automatic Height only available for BDF fonts. Please set the height in px")
+
         if not write_font(args.outfile, args.infile, args.height, args.fixed,
                           args.xmap, args.reverse, args.smallest, args.largest,
                           args.errchar, cset, args.iterate):
