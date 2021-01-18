@@ -20,6 +20,8 @@ display driver is subclassed from the `framebuf` class. Examples are:
  [1.8 inch](https://www.adafruit.com/product/358) and
  [1.44 inch](https://www.adafruit.com/product/2088) are
  [here](https://github.com/peterhinch/micropython-nano-gui/tree/master/drivers/st7735r).
+ * Drivers for ePaper displays documented
+ [here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md#7-epaper-displays)
 
 Basic support is for scrolling text display using multiple fonts. The
 [nanogui](https://github.com/peterhinch/micropython-nano-gui.git) module has
