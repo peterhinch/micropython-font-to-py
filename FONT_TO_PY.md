@@ -45,8 +45,8 @@ installed using `pip3`. On Linux (you may need a root prompt):
 # Usage
 
 `font_to_py.py` is a command line utility written in Python 3. It is run on a
-PC. It takes as input a font file with a `ttf` or `otf` extension and a
-required height in pixels and outputs a Python 3 source file. The pixel layout
+PC. It takes as input a font file with a `ttf`, `otf`, or `bdf` extension and a
+required height in pixels (for bitmap `bdf` fonts, height can be automatically determined) and outputs a Python 3 source file. The pixel layout
 is determined by command arguments. By default fonts are stored in variable
 pitch form. This may be overidden by a command line argument.
 
@@ -69,8 +69,8 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
 
 ### Mandatory positional arguments:
 
- 1. Font file path. Must be a ttf or otf file.
- 2. Height in pixels.
+ 1. Font file path. Must be a ttf, otf, or bdf file.
+ 2. Height in pixels. Specify `0` for bdf bitmap files to automatically use native height
  3. Output file path. Filename must have a .py extension (unless writing a
  binary font).
 

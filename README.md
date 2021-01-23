@@ -44,7 +44,8 @@ This comprises three components, links to docs below:
 # font_to_py.py
 
 This command line utility is written in Python 3 and runs on a PC. It takes
-as input a font file in `ttf` or `otf` form together with a height in pixels
+as input a font file in `ttf`, `otf`, or `bdf` form together with a height in pixels 
+(for bitmap fonts in `bdf` format, the height can be automatically detected)
 and outputs a Python source file containing the font as a bitmap. Fixed and
 variable pitch rendering are supported. The design has the following aims:
 
