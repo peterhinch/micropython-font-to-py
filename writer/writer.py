@@ -91,7 +91,7 @@ class Writer():
         self.row_clip = False  # Clip or scroll when screen full
         self.col_clip = False  # Clip or new line when row is full
         self.wrap = True  # Word wrap
-        self.char_space = 0 # Assumed spacing between characters to avoid premature wrapping/clipping
+        self.char_space = 0 # Define the whitespace between characters, to avoid premature wrapping/clipping
         self.cpos = 0
         self.tab = 4
 
