@@ -622,7 +622,7 @@ if __name__ == "__main__":
         quit("Font filename does not exist")
 
     if not os.path.splitext(args.infile)[1].upper() in ('.TTF', '.OTF', '.BDF'):
-        quit("Font file should be a ttf or otf file.")
+        quit("Font file should be a ttf, otf, or bdf file.")
 
     if args.binary:
         if os.path.splitext(args.outfile)[1].upper() == '.PY':
