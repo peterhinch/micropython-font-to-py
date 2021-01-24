@@ -91,6 +91,7 @@ class Writer():
         self.row_clip = False  # Clip or scroll when screen full
         self.col_clip = False  # Clip or new line when row is full
         self.wrap = True  # Word wrap
+        self.char_space = 0 # Assumed spacing between characters to avoid premature wrapping/clipping
         self.cpos = 0
         self.tab = 4
 
@@ -122,13 +123,17 @@ class Writer():
                 self.device.fill_rect(0, y, self.screenwidth, abs(margin), self.bgcolor)
                 s.text_row += margin
 
-    def set_clip(self, row_clip=None, col_clip=None, wrap=None):
+   # Char space is size of the trailing space to right of character, for checking word/char wrap
+   # eg setting char_space = 1 means characters have 1 pixel of whitespace to their right
+   # Using this prevents premature wrapping of words/characters if only blank space falls off the edge
+    def set_clip(self, row_clip=None, col_clip=None, wrap=None, char_space=0):
         if row_clip is not None:
             self.row_clip = row_clip
         if col_clip is not None:
             self.col_clip = col_clip
         if wrap is not None:
             self.wrap = wrap
+        self.char_space = char_space
         return self.row_clip, self.col_clip, self.wrap
 
     @property
@@ -150,10 +155,10 @@ class Writer():
 
     def _printline(self, string, invert):
         rstr = None
-        if self.wrap and self.stringlen(string) > self.screenwidth:
+        if self.wrap and self.stringlen(string) - self.char_space > self.screenwidth:
             pos = 0
             lstr = string[:]
-            while self.stringlen(lstr) > self.screenwidth:
+            while self.stringlen(lstr) - self.char_space > self.screenwidth:
                 pos = lstr.rfind(' ')
                 lstr = lstr[:pos].rstrip()
             if pos > 0:
@@ -204,7 +209,7 @@ class Writer():
                 if self.row_clip:
                     return
                 self._newline()
-            if s.text_col - char_width < 0:
+            if s.text_col - char_width + self.char_space < 0:
                 if self.col_clip:
                     return
                 else:
@@ -214,7 +219,7 @@ class Writer():
                 if self.row_clip:
                     return
                 self._newline()
-            if s.text_col + char_width > self.screenwidth:
+            if s.text_col + char_width - self.char_space > self.screenwidth:
                 if self.col_clip:
                     return
                 else:
