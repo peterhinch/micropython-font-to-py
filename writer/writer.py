@@ -97,6 +97,7 @@ class Writer():
         self.glyph = None  # Current char
         self.char_height = 0
         self.char_width = 0
+        self.clip_width = 0
 
     def _getstate(self):
         return Writer.state[self.devid]
@@ -199,14 +200,18 @@ class Writer():
             return
         glyph, char_height, char_width = self.font.get_ch(char)
         s = self._getstate()
+        np = None  # Allow restriction on printable columns
         if self.usd:
             if s.text_row - char_height < 0:
                 if self.row_clip:
                     return
                 self._newline()
-            if s.text_col - char_width < 0:
+            oh = s.text_col - char_width  # Amount glyph would overhang edge (-ve)
+            if oh < 0:
                 if self.col_clip:
-                    return
+                    np = char_width + oh  # No of printable columns
+                    if np <= 0:
+                        return
                 else:
                     self._newline()
         else:
@@ -214,14 +219,18 @@ class Writer():
                 if self.row_clip:
                     return
                 self._newline()
-            if s.text_col + char_width > self.screenwidth:
+            oh = s.text_col + char_width - self.screenwidth  # Overhang (+ve)
+            if oh > 0:
                 if self.col_clip:
-                    return
+                    np = char_width - oh  # No. of printable columns
+                    if np <= 0:
+                        return
                 else:
                     self._newline()
         self.glyph = glyph
         self.char_height = char_height
         self.char_width = char_width
+        self.clip_width = char_width if np is None else np
         
     # Method using blitting. Efficient rendering for monochrome displays.
     # Tested on SSD1306. Invert is for black-on-white rendering.
@@ -234,7 +243,7 @@ class Writer():
         if invert:
             for i, v in enumerate(buf):
                 buf[i] = 0xFF & ~ v
-        fbc = framebuf.FrameBuffer(buf, self.char_width, self.char_height, self.map)
+        fbc = framebuf.FrameBuffer(buf, self.clip_width, self.char_height, self.map)
         self.device.blit(fbc, s.text_col, s.text_row)
         s.text_col += self.char_width
         self.cpos += 1
@@ -278,6 +287,7 @@ class CWriter(Writer):
         fbc = framebuf.FrameBuffer(buf, self.char_width, self.char_height, self.map)
         fgcolor = self.bgcolor if invert else self.fgcolor
         bgcolor = self.fgcolor if invert else self.bgcolor
+        # render clips a glyph if outside bounds of destination
         render(self.device, fbc, s.text_col, s.text_row, fgcolor, bgcolor)
         s.text_col += self.char_width
         self.cpos += 1
@@ -289,6 +299,7 @@ class CWriter(Writer):
             return  # All done
         char_height = self.char_height
         char_width = self.char_width
+        clip_width = self.clip_width
 
         div, mod = divmod(char_width, 8)
         gbytes = div + 1 if mod else div  # No. of bytes per row of glyph
@@ -299,7 +310,7 @@ class CWriter(Writer):
         drow = s.text_row  # Destination row
         wcol = s.text_col  # Destination column of character start
         for srow in range(char_height):  # Source row
-            for scol in range(char_width):  # Source column
+            for scol in range(clip_width):  # Source column
                 # Destination column: add/subtract writer column
                 if usd:
                     dcol = wcol - scol
