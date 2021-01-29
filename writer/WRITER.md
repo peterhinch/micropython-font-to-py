@@ -211,7 +211,7 @@ This takes the following args:
  `False` characters will wrap onto the next line. If `row_clip` is `False` the
  display will, where necessary,  scroll up to ensure the line is rendered. If
  `wrap` is `True` word-wrapping will be performed, assuming words are separated
- by spaces.    
+ by spaces.  
  If any arg is `None`, that value will be left unchanged.  
  Returns the current values of `row_clip`, `col_clip` and `wrap`.
  5. `tabsize` Arg `value=None`. If `value` is an integer sets the tab size.

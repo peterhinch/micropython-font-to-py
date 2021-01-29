@@ -138,28 +138,26 @@ class Writer():
 
     def printstring(self, string, invert=False):
         # word wrapping. Assumes words separated by single space.
-        while True:
-            lines = string.split('\n', 1)
-            s = lines[0]
+        q = string.split('\n')
+        last = len(q) - 1
+        for n, s in enumerate(q):
             if s:
                 self._printline(s, invert)
-            if len(lines) == 1:
-                break
-            else:
+            if n != last:
                 self._printchar('\n')
-                string = lines[1]
 
     def _printline(self, string, invert):
         rstr = None
-        if self.wrap and self.stringlen(string) > self.screenwidth:
+        if self.wrap and self.stringlen(string, True):  # Length > self.screenwidth
             pos = 0
             lstr = string[:]
-            while self.stringlen(lstr) > self.screenwidth:
+            while self.stringlen(lstr, True):  # Length > self.screenwidth
                 pos = lstr.rfind(' ')
                 lstr = lstr[:pos].rstrip()
             if pos > 0:
                 rstr = string[pos + 1:]
                 string = lstr
+            #print("[", string, "] [", lstr, "] [", rstr, "]", pos)
                 
         for char in string:
             self._printchar(char, invert)
@@ -167,18 +165,47 @@ class Writer():
             self._printchar('\n')
             self._printline(rstr, invert)  # Recurse
 
-    def stringlen(self, string):
+    def stringlen(self, string, oh=False):
+        sc = self._getstate().text_col  # Start column
+        #print('stringlen sc =', sc)
+        wd = self.screenwidth
         l = 0
-        for char in string:
-            l += self._charlen(char)
-        return l
-
-    def _charlen(self, char):
-        if char == '\n':
-            char_width = 0
-        else:
+        for char in string[:-1]:
             _, _, char_width = self.font.get_ch(char)
-        return char_width
+            l += char_width
+            if oh and l + sc > wd:
+                print('sl1', string, l + sc, wd)
+                return True  # All done. Save time.
+        char = string[-1]
+        _, _, char_width = self.font.get_ch(char)
+        if oh and l + sc + char_width > wd:
+            l += self._truelen(char)  # Last char might have blank cols on RHS
+        else:
+            l += char_width  # Public method. Return same value as old code.
+        print('sl2', string, l + sc, wd, char, char_width)
+        return l + sc > wd if oh else l
+
+    # Return the printable width of a glyph less any blank columns on RHS
+    def _truelen(self, char):
+        glyph, ht, wd = self.font.get_ch(char)
+        div, mod = divmod(wd, 8)
+        gbytes = div + 1 if mod else div  # No. of bytes per row of glyph
+        mc = 0  # Max non-blank column
+        data = glyph[(wd - 1) // 8]  # Last byte of row 0
+        for row in range(ht):  # Glyph row
+            for col in range(wd -1, -1, -1):  # Glyph column
+                gbyte, gbit = divmod(col, 8)
+                if gbit == 0:  # Next glyph byte
+                    data = glyph[row * gbytes + gbyte]
+                if col <= mc:
+                    break
+                if data & (1 << (7 - gbit)):  # Pixel is lit (1)
+                    mc = col  # Eventually gives rightmost lit pixel
+                    break
+            if mc + 1 == wd:
+                break  # All done: no trailing space
+        print('Truelen', char, wd, mc + 1)
+        return mc + 1
 
     def _get_char(self, char, recurse):
         if not recurse:  # Handle tabs
@@ -208,7 +235,7 @@ class Writer():
                 self._newline()
             oh = s.text_col - char_width  # Amount glyph would overhang edge (-ve)
             if oh < 0:
-                if self.col_clip:
+                if self.col_clip or self.wrap:
                     np = char_width + oh  # No of printable columns
                     if np <= 0:
                         return
@@ -221,7 +248,7 @@ class Writer():
                 self._newline()
             oh = s.text_col + char_width - self.screenwidth  # Overhang (+ve)
             if oh > 0:
-                if self.col_clip:
+                if self.col_clip or self.wrap:
                     np = char_width - oh  # No. of printable columns
                     if np <= 0:
                         return
