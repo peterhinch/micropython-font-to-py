@@ -1,6 +1,9 @@
 # writer.py Implements the Writer class.
-# V0.35 Peter Hinch Sept 2020 Fast rendering option for color displays
-# Handles colour, upside down diplays, word wrap and tab stops
+# Handles colour, word wrap and tab stops
+
+# V0.40 Jan 2021 Improved handling of word wrap and line clip. Upside-down
+# rendering no longer supported: delegate to device driver.
+# V0.35 Sept 2020 Fast rendering option for color displays
 
 # Released under the MIT License (MIT). See LICENSE.
 # Copyright (c) 2019-2020 Peter Hinch
@@ -21,6 +24,8 @@
 import framebuf
 from uctypes import bytearray_at, addressof
 
+__version__ = (0, 4, 0)
+
 fast_mode = True
 try:
     try:
@@ -39,7 +44,6 @@ class DisplayState():
     def __init__(self):
         self.text_row = 0
         self.text_col = 0
-        self.usd = False
 
 def _get_id(device):
     if not isinstance(device, framebuf.FrameBuffer):
@@ -60,11 +64,11 @@ class Writer():
         if row is not None:
             if row < 0 or row >= device.height:
                 raise ValueError('row is out of range')
-            s.text_row = device.height - 1 - row if s.usd else row
+            s.text_row = row
         if col is not None:
             if col < 0 or col >= device.width:
                 raise ValueError('col is out of range')
-            s.text_col = device.width -1 - col if s.usd else col
+            s.text_col = col
         return s.text_row,  s.text_col
 
     def __init__(self, device, font, verbose=True):
@@ -73,7 +77,6 @@ class Writer():
         if self.devid not in Writer.state:
             Writer.state[self.devid] = DisplayState()
         self.font = font
-        self.usd = Writer.state[self.devid].usd
 
         # Allow to work with reverse or normal font mapping
         if font.hmap():
@@ -105,20 +108,12 @@ class Writer():
     def _newline(self):
         s = self._getstate()
         height = self.font.height()
-        if self.usd:
-            s.text_row -= height
-            s.text_col = self.screenwidth - 1
-            margin = s.text_row - height
-            y = 0
-        else:
-            s.text_row += height
-            s.text_col = 0
-            margin = self.screenheight - (s.text_row + height)
-            y = self.screenheight + margin
+        s.text_row += height
+        s.text_col = 0
+        margin = self.screenheight - (s.text_row + height)
+        y = self.screenheight + margin
         if margin < 0:
             if not self.row_clip:
-                if self.usd:
-                    margin = -margin
                 self.device.scroll(0, margin)
                 self.device.fill_rect(0, y, self.screenwidth, abs(margin), self.bgcolor)
                 s.text_row += margin
@@ -157,7 +152,6 @@ class Writer():
             if pos > 0:
                 rstr = string[pos + 1:]
                 string = lstr
-            #print("[", string, "] [", lstr, "] [", rstr, "]", pos)
                 
         for char in string:
             self._printchar(char, invert)
@@ -167,14 +161,12 @@ class Writer():
 
     def stringlen(self, string, oh=False):
         sc = self._getstate().text_col  # Start column
-        #print('stringlen sc =', sc)
         wd = self.screenwidth
         l = 0
         for char in string[:-1]:
             _, _, char_width = self.font.get_ch(char)
             l += char_width
             if oh and l + sc > wd:
-                print('sl1', string, l + sc, wd)
                 return True  # All done. Save time.
         char = string[-1]
         _, _, char_width = self.font.get_ch(char)
@@ -182,7 +174,6 @@ class Writer():
             l += self._truelen(char)  # Last char might have blank cols on RHS
         else:
             l += char_width  # Public method. Return same value as old code.
-        print('sl2', string, l + sc, wd, char, char_width)
         return l + sc > wd if oh else l
 
     # Return the printable width of a glyph less any blank columns on RHS
@@ -204,7 +195,7 @@ class Writer():
                     break
             if mc + 1 == wd:
                 break  # All done: no trailing space
-        print('Truelen', char, wd, mc + 1)
+        print('Truelen', char, wd, mc + 1)  # TEST 
         return mc + 1
 
     def _get_char(self, char, recurse):
@@ -228,32 +219,18 @@ class Writer():
         glyph, char_height, char_width = self.font.get_ch(char)
         s = self._getstate()
         np = None  # Allow restriction on printable columns
-        if self.usd:
-            if s.text_row - char_height < 0:
-                if self.row_clip:
+        if s.text_row + char_height > self.screenheight:
+            if self.row_clip:
+                return
+            self._newline()
+        oh = s.text_col + char_width - self.screenwidth  # Overhang (+ve)
+        if oh > 0:
+            if self.col_clip or self.wrap:
+                np = char_width - oh  # No. of printable columns
+                if np <= 0:
                     return
+            else:
                 self._newline()
-            oh = s.text_col - char_width  # Amount glyph would overhang edge (-ve)
-            if oh < 0:
-                if self.col_clip or self.wrap:
-                    np = char_width + oh  # No of printable columns
-                    if np <= 0:
-                        return
-                else:
-                    self._newline()
-        else:
-            if s.text_row + char_height > self.screenheight:
-                if self.row_clip:
-                    return
-                self._newline()
-            oh = s.text_col + char_width - self.screenwidth  # Overhang (+ve)
-            if oh > 0:
-                if self.col_clip or self.wrap:
-                    np = char_width - oh  # No. of printable columns
-                    if np <= 0:
-                        return
-                else:
-                    self._newline()
         self.glyph = glyph
         self.char_height = char_height
         self.char_width = char_width
@@ -286,12 +263,6 @@ class Writer():
 # Writer for colour displays or upside down rendering
 class CWriter(Writer):
 
-    @staticmethod
-    def invert_display(device, value=True):
-        devid = id(device)
-        if devid not in Writer.state:
-            Writer.state[devid] = DisplayState()
-        Writer.state[devid].usd = value
 
     def __init__(self, device, font, fgcolor=None, bgcolor=None, verbose=True):
         super().__init__(device, font, verbose)
@@ -301,9 +272,8 @@ class CWriter(Writer):
             self.fgcolor = fgcolor
         self.def_bgcolor = self.bgcolor
         self.def_fgcolor = self.fgcolor
-        fm = fast_mode and not self.usd
-        self._printchar = self._pchfast if fm else self._pchslow
-        verbose and print('Render {} using fast mode'.format('is' if fm else 'not'))
+        self._printchar = self._pchfast if fast_mode else self._pchslow
+        verbose and print('Render {} using fast mode'.format('is' if fast_mode else 'not'))
 
     def _pchfast(self, char, invert=False, recurse=False):
         s = self._getstate()
@@ -333,25 +303,21 @@ class CWriter(Writer):
         device = self.device
         fgcolor = self.bgcolor if invert else self.fgcolor
         bgcolor = self.fgcolor if invert else self.bgcolor
-        usd = self.usd
         drow = s.text_row  # Destination row
         wcol = s.text_col  # Destination column of character start
         for srow in range(char_height):  # Source row
             for scol in range(clip_width):  # Source column
-                # Destination column: add/subtract writer column
-                if usd:
-                    dcol = wcol - scol
-                else:
-                    dcol = wcol + scol
+                # Destination column: add writer column
+                dcol = wcol + scol
                 gbyte, gbit = divmod(scol, 8)
                 if gbit == 0:  # Next glyph byte
                     data = self.glyph[srow * gbytes + gbyte]
                 pixel = fgcolor if data & (1 << (7 - gbit)) else bgcolor
                 device.pixel(dcol, drow, pixel)
-            drow += -1 if usd else 1
+            drow += 1
             if drow >= self.screenheight or drow < 0:
                 break
-        s.text_col += -char_width if usd else char_width
+        s.text_col += char_width
         self.cpos += 1
 
     def setcolor(self, fgcolor=None, bgcolor=None):
