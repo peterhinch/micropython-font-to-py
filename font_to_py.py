@@ -6,11 +6,12 @@
 
 # Some code adapted from Daniel Bader's work at the following URL
 # http://dbader.org/blog/monochrome-font-rendering-with-freetype-and-python
-# With thanks to Stephen Irons @ironss for various improvements.
+# With thanks to Stephen Irons @ironss for various improvements, also to
+# @enigmaniac for ideas around handling `bdf` and `pcf` files.
 
 # The MIT License (MIT)
 #
-# Copyright (c) 2016-2019 Peter Hinch
+# Copyright (c) 2016-2021 Peter Hinch
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -46,7 +47,7 @@ MAXCHAR = 126  # 94 chars
 
 # Lines are broken with \ for readability.
 
-class ByteWriter(object):
+class ByteWriter:
     bytes_per_line = 16
 
     def __init__(self, stream, varname):
@@ -92,7 +93,7 @@ def var_write(stream, name, value):
 # FONT HANDLING
 
 
-class Bitmap(object):
+class Bitmap:
     """
     A 2D bitmap image represented as a list of byte values. Each byte indicates
     the state of a single pixel in the bitmap. A value of 0 indicates that the
@@ -166,7 +167,7 @@ class Bitmap(object):
                 row += 1
 
 
-class Glyph(object):
+class Glyph:
     def __init__(self, pixels, width, height, top, left, advance_width):
         self.bitmap = Bitmap(width, height, pixels)
 
@@ -495,7 +496,6 @@ def write_func(stream, name, arg):
 
 def write_font(op_path, font_path, height, monospaced, hmap, reverse, minchar,
                maxchar, defchar, charset, iterate, bitmapped):
-#    fnt = Font(font_path, height, minchar, maxchar, monospaced, defchar, charset, bitmapped)
     try:
         fnt = Font(font_path, height, minchar, maxchar, monospaced, defchar, charset, bitmapped)
     except freetype.ft_errors.FT_Exception:
@@ -576,8 +576,8 @@ def quit(msg):
     print(msg)
     sys.exit(1)
 
-DESC = """font_to_py.py
-Utility to convert ttf or otf font files to Python source.
+DESC = """font_to_py.py V0.4.0
+Utility to convert ttf, otf, bdf and pcf font files to Python source.
 Sample usage:
 font_to_py.py FreeSans.ttf 23 freesans.py
 

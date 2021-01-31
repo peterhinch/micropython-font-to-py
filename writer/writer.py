@@ -6,7 +6,7 @@
 # V0.35 Sept 2020 Fast rendering option for color displays
 
 # Released under the MIT License (MIT). See LICENSE.
-# Copyright (c) 2019-2020 Peter Hinch
+# Copyright (c) 2019-2021 Peter Hinch
 
 # A Writer supports rendering text to a Display instance in a given font.
 # Multiple Writer instances may be created, each rendering a font to the

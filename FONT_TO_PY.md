@@ -1,15 +1,20 @@
-# font_to_py.py
+# 1. font_to_py.py
 
-Convert a font file to Python source code. Python font files provide a much
-faster way to access glyphs than the principal alternative which is a random
-access file on the filesystem.
+This PC utility converts an industry standard font file to Python source code.
 
-Another benefit is that they can save large amounts of RAM on resource-limited
-targets: the font file may be incorporated into a firmware build such that it
-occupies flash memory rather than scarce RAM. Python code built into firmware
-is known as frozen bytecode.
+Python font files offer advantages on microcontroller platforms running
+MicroPython. They provide a much faster way to render glyphs than the principal
+alternative which is a random access binary file on the filesystem.
 
-## Recent revisions
+The format of the Python font file is designed to save large amounts of RAM on
+resource-limited targets: the font file may be incorporated into a firmware
+build such that it occupies flash memory rather than scarce RAM. Python code
+built into firmware is known as frozen bytecode.
+
+## 1.1 Recent revisions
+
+1 Feb 2021 V0.4 With thanks to @enigmaniac for the suggestion and code ideas.
+ 1. Now supports `bdf` and `pcf` font files for better results at small sizes.
 
 17 Oct 2019 V0.33 With thanks to Stephen Irons (@ironss).
  1. Fix bug where input rather than output filename was checked.
@@ -32,7 +37,7 @@ API is unchanged.
 
 ###### [Main README](./README.md)
 
-# Dependencies
+# 2. Dependencies
 
 The utility requires Python 3.2 or greater, also `freetype` which may be
 installed using `pip3`. On Linux (you may need a root prompt):
@@ -42,13 +47,15 @@ installed using `pip3`. On Linux (you may need a root prompt):
 # pip3 install freetype-py
 ```
 
-# Usage
+# 3. Usage
 
 `font_to_py.py` is a command line utility written in Python 3. It is run on a
 PC. It takes as input a font file with a `ttf` or `otf` extension and a
-required height in pixels and outputs a Python 3 source file. The pixel layout
-is determined by command arguments. By default fonts are stored in variable
-pitch form. This may be overidden by a command line argument.
+required height in pixels and outputs a Python 3 source file. Alternatively it
+will accept a `bdf` or `pcf` source file (which includes a height definition).
+The pixel layout is determined by command arguments. By default fonts are
+stored in variable pitch form. This may be overidden by a command line
+argument.
 
 By default the printable ASCII character set (ordinal values 32 to 126
 inclusive) is supported (i.e. not including control characters). Command line
@@ -65,16 +72,18 @@ Examples of usage to produce Python fonts with a height of 23 pixels:
 $ font_to_py.py FreeSans.ttf 23 myfont.py
 $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
 ```
-## Arguments
+## 3.1 Arguments
 
-### Mandatory positional arguments:
+### 3.1.1 Mandatory positional arguments:
 
  1. Font file path. Must be a ttf or otf file.
- 2. Height in pixels.
+ 2. Height in pixels. In the case of `bdf` or `pcf` files a height of 0 should
+ be specified as the height is retrieved from the file.
  3. Output file path. Filename must have a .py extension (unless writing a
- binary font).
+ binary font). A warning is output if the output filename does not have a .py
+ extension as the creation of a binary font file may not be intended.
 
-### Optional arguments:
+### 3.1.2 Optional arguments:
 
  * -f or --fixed If specified, all characters will have the same width. By
  default fonts are assumed to be variable pitch.
@@ -121,29 +130,32 @@ pitch result. A better apearance would be achieved by using a font designed as
 monospaced.
 
 There have been reports that producing fonts with Unicode characters outside
-the ASCII set from ttf files is unreliable. If expected results are not
-achieved, use an otf font. I have successfully created Cyrillic and extended
+the ASCII set from `ttf` files is unreliable. If expected results are not
+achieved, use an `otf` font. I have successfully created Cyrillic and extended
 fonts from a `ttf`, so I suspect the issue may be source fonts lacking the
 required glyphs.
 
-The `-i` or `--iterate` argument. For specialist applications. Specifying this
-causes a generator function `glyphs` to be included in the Python font file. A
-generator instantiated with this will yield `bitmap`, `height`, and `width` for
-every glyph in the font.
+### 3.1.3 The -i or --iterate arg
 
-### Output
+This is for specialist applications; it causes a generator function `glyphs` to
+be included in the Python font file. A generator instantiated with this will
+yield `bitmap`, `height`, and `width` for every glyph in the font.
 
-The specified height is a target. The algorithm gets as close to the target
-height as possible (usually within one pixel). The actual height achieved is
-displayed on completion, along with the width of the widest character.
+### 3.1.4 The height arg
 
-A warning is output if the output filename does not have a .py extension as the
-creation of a binary font file may not be intended.
+In the case of scalable `ttf` or `otf` source files the specified height is a
+target. The algorithm gets as close to the target height as possible (usually
+within one pixel). The actual height achieved is displayed on completion, along
+with the width of the widest character.
 
-## The font file
+If a `bdf` or `pcf` bitmapped font is specified, the `height` arg should be 0.
+A nonzero value will cause a warning message to be printed and the value will
+be ignored.
+
+## 3.2 The font file
 
 Assume that the you have employed the utility to create a file `myfont.py`. In
-your code you will issue
+your code you will issue:
 
 ```python
 import myfont
@@ -154,9 +166,14 @@ to render strings on demand. A practical example may be studied
 [here](./writer/writer_demo.py).
 The detailed layout of the Python file may be seen [here](./writer/DRIVERS.md).
 
-### Python font files
+# 4. Python font files
 
-These start with a comment which is the command line used to create the font.
+Users of the `Writer` or `CWriter` classes or of 
+[nano-gui](https://github.com/peterhinch/micropython-nano-gui) do not need to
+study the file format. These details are provided for those wishing to access
+Python font files directly.
+
+Files start with a comment which is the command line used to create the font.
 
 They include the following functions:
  1. `height()` Height of bitmaps in pixels (all are the same height).
@@ -177,7 +194,7 @@ They include the following functions:
 See [this link](https://stackoverflow.com/questions/27631736/meaning-of-top-ascent-baseline-descent-bottom-and-leading-in-androids-font)
 for an explanation of `baseline`.
 
-### Binary font files
+# 5. Binary font files
 
 There is an option to create a binary font file, specified with a `-b` or
 `--binary` command line argument. In this instance the output filename must
@@ -197,7 +214,7 @@ Only the following optional arguments are valid:
  * -x or --xmap.
  * -r or --reverse.
 
-# Dependencies, links and licence
+# 6. Dependencies, links and licence
 
 The code is released under the MIT licence. The `font_to_py.py` utility
 requires Python 3.2 or later.
