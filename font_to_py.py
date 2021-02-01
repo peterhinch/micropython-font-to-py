@@ -5,7 +5,7 @@
 # Implements multi-pass solution to setting an exact font height
 
 # Some code adapted from Daniel Bader's work at the following URL
-# http://dbader.org/blog/monochrome-font-rendering-with-freetype-and-python
+# https://dbader.org/blog/monochrome-font-rendering-with-freetype-and-python
 # With thanks to Stephen Irons @ironss for various improvements, also to
 # @enigmaniac for ideas around handling `bdf` and `pcf` files.
 
