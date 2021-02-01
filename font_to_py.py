@@ -34,8 +34,14 @@
 import argparse
 import sys
 import os
-import freetype
-
+try:
+    import freetype
+except ModuleNotFoundError:
+    print('font_to_py requires the freetype library. Please see FONT_TO_PY.md.')
+    sys.exit(1)
+if freetype.version()[0] < 1:
+    print('freetype version should be >= 1. Please see FONT_TO_PY.md')
+    
 MINCHAR = 32  # Ordinal values of default printable ASCII set
 MAXCHAR = 126  # 94 chars
 
@@ -289,7 +295,6 @@ class Font(dict):
         self._assign_values()  # Assign values to existing keys
 
     def bmp_dimensions(self, height):
-        #self._face.set_pixel_sizes(0, height)  # TODO fails with PCF file: invalid pixel size
         max_descent = 0
         # For each character in the charset string we get the glyph
         # and update the overall dimensions of the resulting bitmap.
