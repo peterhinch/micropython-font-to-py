@@ -77,7 +77,8 @@ class Writer():
         if self.devid not in Writer.state:
             Writer.state[self.devid] = DisplayState()
         self.font = font
-
+        if font.height() >= device.height or font.max_width() >= device.width:
+            raise ValueError('Font too large for screen')
         # Allow to work with reverse or normal font mapping
         if font.hmap():
             self.map = framebuf.MONO_HMSB if font.reverse() else framebuf.MONO_HLSB
@@ -91,7 +92,7 @@ class Writer():
         self.screenheight = device.height
         self.bgcolor = 0  # Monochrome background and foreground colors
         self.fgcolor = 1
-        self.row_clip = False  # Clip or scroll when screen full
+        self.row_clip = False  # Clip or scroll when screen fullt
         self.col_clip = False  # Clip or new line when row is full
         self.wrap = True  # Word wrap
         self.cpos = 0
