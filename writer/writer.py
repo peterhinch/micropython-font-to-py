@@ -23,20 +23,23 @@
 
 import framebuf
 from uctypes import bytearray_at, addressof
+from sys import platform
 
-__version__ = (0, 4, 0)
+__version__ = (0, 4, 1)
 
-fast_mode = True
-try:
+fast_mode = platform != 'rp2'  # framebuf_utils crashes RP2
+if fast_mode:
     try:
-        from framebuf_utils import render
-    except ImportError:  # May be running in GUI. Try relative import.
         try:
-            from .framebuf_utils import render
-        except ImportError:
-            fast_mode = False
-except ValueError:
-    fast_mode = False
+            from framebuf_utils import render
+        except ImportError:  # May be running in GUI. Try relative import.
+            try:
+                from .framebuf_utils import render
+            except ImportError:
+                fast_mode = False
+    except ValueError:
+        fast_mode = False
+if not fast_mode:
     print('Ignoring framebuf_utils.mpy: compiled for incorrect architecture.')
 
 
