@@ -271,19 +271,21 @@ the `framebuf.blit` method the class renders glyphs one pixel at a time. There
 is a way to improve performance. It was developed by Jim Mussared (@jimmo) and
 consists of a native C module.
 
+This works well on Pyboards (1.x and D) but I have had no success on other
+platforms including the Raspberry Pi Pico. The code will silently ignore this
+module on other platforms. The following applies only when run on a Pyboard.
+
 On import, `writer.py` attempts to import a module `framebuf_utils`. If this
 succeeds, glyph rendering will be substantially faster. If the file is not
-present the class will work using normal rendering. If the file exists but was
-compiled for a different architecture a warning message will be printed. This
-is a harmless advisory - the code will run using normal rendering.
+present the class will work using normal rendering. If the file is missing or
+invalid a harmless advisory note is printed and the code will run using normal
+rendering.
 
 The directory `framebuf_utils` contains the source file, the makefile and a
 version of `framebuf_utils.mpy` for `armv7m` architecture (e.g. Pyboards).
-ESP32 users with access to the development toolchain should change `Makefile`
-to specify the `xtensawin` arch and rebuild.
-
-It is suggested that moving the appropriate `framebuf_utils.mpy` to the target
-is only done once the basic operation of an application has been verified.
+This allows for recompiling for other architectures if anyone feels like
+experimenting. However the fact that it crashes the Pico suggests that the code
+is highly specific to the Pybaord.
 
 The module has a `fast_mode` variable which is set `True` on import if the mode
 was successfully engaged. User code should treat this as read-only.
