@@ -264,7 +264,7 @@ class Writer():
     def setcolor(self, *_):
         return self.fgcolor, self.bgcolor
 
-# Writer for colour displays or upside down rendering
+# Writer for colour displays.
 class CWriter(Writer):
 
 
