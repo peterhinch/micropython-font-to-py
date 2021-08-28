@@ -60,7 +60,7 @@ Labels and Fields (from nanogui.py).
   2.2 [The CWriter class](./WRITER.md#22-the-cwriter-class) For colour displays.  
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.1 [Constructor](./WRITER.md#221-constructor)  
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.2 [Methods](./WRITER.md#222-methods)  
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.3 [A performance boost](./WRITER.md#223-a-performance-boost)  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.3 [Performance](./WRITER.md#223-performance) A firmware enhancement.  
  3. [Notes](./WRITER.md#3-notes)
 
 ###### [Main README](../README.md)
@@ -87,6 +87,10 @@ it is likely that `writer.py` will need to be frozen as bytecode. The original
 very simple version still exists as `writer_minimal.py`.
 
 ## 1.1 Release Notes
+
+V0.4.3 Aug 2021  
+Supports fast rendering of glyphs to color displays (PR7682). See
+[Performance](./WRITER.md#223-performance).
 
 V0.4.0 Jan 2021  
 Improved handling of the `col_clip` and `wrap` options. Improved accuracy
@@ -115,8 +119,6 @@ for a non-Pyboard target.
  4. `writer_tests.py` Test/demo scripts. Import to see usage information.
  5. `writer_minimal.py` A minimal version for highly resource constrained
  devices.
- 6. `framebuf_utils.framebuf_utils.mpy` A means of improving rendering speed
- on color displays. Discussed [in 2.2.3](./WRITER.md#223-a-performance-boost)  
 
 Sample fonts:
  1. `freesans20.py` Variable pitch font file.
@@ -264,31 +266,16 @@ The `printstring` method works as per the base class except that the string is
 rendered in foreground color on background color (or reversed if `invert` is
 `True`).
 
-### 2.2.3 A performance boost
+### 2.2.3 Performance
 
-Rendering performance of the `Cwriter` class is slow: owing to limitations in
-the `framebuf.blit` method the class renders glyphs one pixel at a time. There
-is a way to improve performance. It was developed by Jim Mussared (@jimmo) and
-consists of a native C module.
+A firmware change [PR7682](https://github.com/micropython/micropython/pull/7682)
+has enabled a substantial improvement to text rendering speed. This will be
+incorporated in V1.17 and is available in daily builds. The `Writer` class
+checks for suitable firmware. If the firmware lacks this enhancement a slower
+method of rendering is used.
 
-This works well on Pyboards (1.x and D) but I have had no success on other
-platforms including the Raspberry Pi Pico. The code will silently ignore this
-module on other platforms. The following applies only when run on a Pyboard.
-
-On import, `writer.py` attempts to import a module `framebuf_utils`. If this
-succeeds, glyph rendering will be substantially faster. If the file is not
-present the class will work using normal rendering. If the file is missing or
-invalid a harmless advisory note is printed and the code will run using normal
-rendering.
-
-The directory `framebuf_utils` contains the source file, the makefile and a
-version of `framebuf_utils.mpy` for `armv7m` architecture (e.g. Pyboards).
-This allows for recompiling for other architectures if anyone feels like
-experimenting. However the fact that it crashes the Pico suggests that the code
-is highly specific to the Pybaord.
-
-The module has a `fast_mode` variable which is set `True` on import if the mode
-was successfully engaged. User code should treat this as read-only.
+The module has a `fast_mode` variable which is set `True` on import if the
+firmware supports fast rendering. User code should treat this as read-only.
 
 # 3. Notes
 

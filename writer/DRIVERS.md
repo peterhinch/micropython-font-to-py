@@ -178,7 +178,7 @@ The index holds two integers (each occupying 2 bytes) per character. The index
 has an entry for every character in the specified range, whether or not that
 character exists.
 
-Index entries are offsets into the `_font` bytearray represnting the start and
+Index entries are offsets into the `_font` bytearray representing the start and
 end of the glyph. If the font comprises a set of characters which is not
 contiguous, missing characters have an index entry which points to the first
 glyph in the `_font` bytearray. This ensures that the default glyph is
@@ -252,6 +252,13 @@ Fonts created with the `font_to_py` utility have been extensively tested with
 each of the mapping options. They are used with drivers for SSD1306 OLEDs,
 SSD1963 LCD displays, the official LCD160CR and the Digital Artists 2.7 inch
 e-paper display.
+
+# Writing display drivers
+
+A guide to writing suitable drivers may be found
+[here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md#7-writing-device-drivers).
+These can be very simple as the `FrameBuffer` base class provides much of the
+functionality.
 
 # Appendix 1. The -i --iterate argument
 
