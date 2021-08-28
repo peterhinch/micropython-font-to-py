@@ -47,7 +47,7 @@ Mixed text and graphics.
 ![Image](images/fields.JPG)  
 Labels and Fields (from nanogui.py).
 
-![Image](images/fonts.png)__
+![Image](images/fonts.png)  
 The `CWriter` class (from nanogui): `Label` objects in two fonts.  
 
 # Contents
