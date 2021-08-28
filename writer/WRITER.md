@@ -26,7 +26,9 @@ display driver is subclassed from the `framebuf` class. Examples are:
 Basic support is for scrolling text display using multiple fonts. The
 [nanogui](https://github.com/peterhinch/micropython-nano-gui.git) module has
 optional extensions for user interface objects displayed at arbitrary locations
-on screen.
+on screen. The [micro-gui](https://github.com/peterhinch/micropython-micro-gui)
+library extends this to offer user input via pushbuttons and (optionally) a
+rotary encoder.
 
 Example code and images are for 128*64 SSD1306 OLED displays.
 
@@ -45,6 +47,9 @@ Mixed text and graphics.
 ![Image](images/fields.JPG)  
 Labels and Fields (from nanogui.py).
 
+![Image](images/fonts.png)__
+The `CWriter` class (from nanogui): `Label` objects in two fonts.  
+
 # Contents
 
  1. [Introduction](./WRITER.md#1-introduction)  
@@ -60,7 +65,7 @@ Labels and Fields (from nanogui.py).
   2.2 [The CWriter class](./WRITER.md#22-the-cwriter-class) For colour displays.  
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.1 [Constructor](./WRITER.md#221-constructor)  
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.2 [Methods](./WRITER.md#222-methods)  
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.3 [Performance](./WRITER.md#223-performance) A firmware enhancement.  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.3 [Performance](./WRITER.md#223-performance) A firmware enhancement for color displays.  
  3. [Notes](./WRITER.md#3-notes)
 
 ###### [Main README](../README.md)
@@ -140,10 +145,11 @@ fonts may be frozen as bytecode reducing the RAM impact of each font to about
 The `Writer` class provides fast rendering to monochrome displays using bit
 blitting.
 
-The `CWriter` class is a subclass of `Writer` to support color displays. Owing
-to limitations in the `frmebuf.blit` method the `CWriter` class renders glyphs
-one pixel at a time; rendering is therefore slower than the `Writer` class. A
-substantial improvement is possible. See [2.2.3](./WRITER.md#223-a-performance-boost).
+The `CWriter` class is a subclass of `Writer` to support color displays. Former
+limitations in the `framebuf.blit` method meant it could not be used for color
+display. The `CWriter` class therefore rendered glyphs one pixel at a time
+which was slow. With current firmware and compatible display drivers fast C
+blitting is used. See [2.2.3](./WRITER.md#223-a-performance-boost).
 
 Multiple screens are supported. On any screen multiple `Writer` or `CWriter`
 instances may be used, each using a different font. A class variable holds the
@@ -269,13 +275,21 @@ rendered in foreground color on background color (or reversed if `invert` is
 ### 2.2.3 Performance
 
 A firmware change [PR7682](https://github.com/micropython/micropython/pull/7682)
-has enabled a substantial improvement to text rendering speed. This will be
-incorporated in V1.17 and is available in daily builds. The `Writer` class
-checks for suitable firmware. If the firmware lacks this enhancement a slower
-method of rendering is used.
+enables a substantial improvement to text rendering speed on color displays.
+This is in daily builds and will be incorporated in V1.17. The initialisation
+code checks for suitable firmware and also for a compatible device driver. If
+these are absent the old slower method of rendering is used.
 
 The module has a `fast_mode` variable which is set `True` on import if the
-firmware supports fast rendering. User code should treat this as read-only.
+firmware supports fast rendering. User code should treat this as read-only. The
+value of this is meaningless for monochrome displays which always render fast.
+
+If the `verbose` constructor arg is `True` a message will be printed on startup
+indicating whether fast mode is in use. As above, this is meaningless for
+monochrome displays. Possible reasons for it not being used:
+ * Firmware not recent enough.
+ * Display driver does not include a `palette` bound variable.
+ * `writer.py` not the current version.
 
 # 3. Notes
 
