@@ -1,34 +1,19 @@
 # Writer and Cwriter classes
 
 These classes facilitate rendering Python font files to displays where the
-display driver is subclassed from the `framebuf` class. Examples are:
+display driver is subclassed from the `framebuf` class. Basic support is for
+scrolling text display using multiple fonts.
 
- * The official [SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
- * The [PCD8544/Nokia 5110](https://github.com/mcauser/micropython-pcd8544.git).
- * The [Adafruit 0.96 inch color OLED](https://www.adafruit.com/product/684)
- with [this driver](https://github.com/peterhinch/micropython-nano-gui/tree/master/drivers/ssd1331).
- * The [Adafruit 1.5 inch color OLED](https://www.adafruit.com/product/1431) and
- the [Adafruit 1.27 inch color OLED](https://www.adafruit.com/product/1673) with
- [this driver](https://github.com/peterhinch/micropython-nano-gui/blob/master/drivers/ssd1351/ssd1351.py)
- for STM32 (Pyboards etc) or [this one](https://github.com/peterhinch/micropython-nano-gui/blob/master/drivers/ssd1351/ssd1351_generic.py)
- for other targets.
- * The [HX1230 96x68 LCD](https://github.com/mcauser/micropython-hx1230.git).
- * A driver for Sharp ultra low power consumption monochrome displays such as
- [2.7 inch 400x240 pixels](https://www.adafruit.com/product/4694)
- is [here](https://github.com/peterhinch/micropython-nano-gui/tree/master/drivers/sharp).
- * Drivers for Adafruit ST7735R based TFT's: 
- [1.8 inch](https://www.adafruit.com/product/358) and
- [1.44 inch](https://www.adafruit.com/product/2088) are
- [here](https://github.com/peterhinch/micropython-nano-gui/tree/master/drivers/st7735r).
- * Drivers for ePaper displays documented
- [here](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md#7-epaper-displays)
+Two cross-platform GUI libraries build on this to provide a variety of widgets.
+These are:
+ * [nano-gui](https://github.com/peterhinch/micropython-nano-gui) An extremely
+ lightweight display-only GUI.
+ * [micro-gui](https://github.com/peterhinch/micropython-micro-gui) A GUI
+ providing input via either pushbuttons or pushbuttons plus a rotary encoder.
 
-Basic support is for scrolling text display using multiple fonts. The
-[nanogui](https://github.com/peterhinch/micropython-nano-gui.git) module has
-optional extensions for user interface objects displayed at arbitrary locations
-on screen. The [micro-gui](https://github.com/peterhinch/micropython-micro-gui)
-library extends this to offer user input via pushbuttons and (optionally) a
-rotary encoder.
+For applications needing only to render text to a display, and optionally to
+draw graphics using `FrameBuffer` primitives, the `writer` module may be used
+alone.
 
 Example code and images are for 128*64 SSD1306 OLED displays.
 
@@ -57,6 +42,7 @@ The `CWriter` class (from nanogui): `Label` objects in two fonts.
   1.2 [Hardware](./WRITER.md#12-hardware)  
   1.3 [Files](./WRITER.md#13-files)  
   1.4 [Fonts](./WRITER.md#14-fonts)  
+  1.5 [Supported displays](./WRITER.md#15-supported-displays)  
  2. [Writer and CWriter classes](./WRITER.md#2-writer-and-cwriter-classes)  
   2.1 [The Writer class](./WRITER.md#21-the-writer-class) For monochrome displays.  
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.1.1 [Static Method](./WRITER.md#211-static-method)  
@@ -65,6 +51,7 @@ The `CWriter` class (from nanogui): `Label` objects in two fonts.
   2.2 [The CWriter class](./WRITER.md#22-the-cwriter-class) For colour displays.  
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.1 [Constructor](./WRITER.md#221-constructor)  
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.2 [Methods](./WRITER.md#222-methods)  
+  2.3 [Example color code](./WRITER.md#23-example-color-code)  
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.3 [Performance](./WRITER.md#223-performance) A firmware enhancement for color displays.  
  3. [Notes](./WRITER.md#3-notes)
 
@@ -83,7 +70,7 @@ The module has the following features:
  * Text display of fixed and variable pitch fonts with wrapping and vertical
  scrolling.
  * Wrap/clip options: clip, character wrap or word wrap.
- * Tab support.
+ * Tab support. This is rudimentary and "micro".
  * String metrics to enable right or centre justification.
  * Inverse (background color on foreground color) display.
 
@@ -112,7 +99,8 @@ the old option only affected rendered text.
 
 Tests and demos assume a 128*64 SSD1306 OLED display connected via I2C or SPI.
 Wiring is specified in `ssd1306_setup.py`. Edit this to use a different bus or
-for a non-Pyboard target.
+for a non-Pyboard target. [Section 2.3](./WRITER.md#23-example-color-code)
+shows how to drive color displays using the `CWriter` class.
 
 ## 1.3 Files
 
@@ -138,23 +126,37 @@ mapping (`-x` option). The `-r` option is not required. If RAM is critical
 fonts may be frozen as bytecode reducing the RAM impact of each font to about
 340 bytes. This is highly recommended.
 
+## 1.5 Supported displays
+
+These include:
+ * The official [SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
+ * The [PCD8544/Nokia 5110](https://github.com/mcauser/micropython-pcd8544.git).
+
+The nano-gui repo includes a growing list of display drivers compatible with
+`writer.py`. It may be found in
+[the nano-gui docs](https://github.com/peterhinch/micropython-nano-gui/blob/master/README.md#12-description).
+
+Supported technologies are monochrome and color OLED, TFT, ePaper and the Sharp
+ultra low power monochrome display.
+
 ###### [Contents](./WRITER.md#contents)
 
 # 2. Writer and CWriter classes
 
 The `Writer` class provides fast rendering to monochrome displays using bit
-blitting.
-
-The `CWriter` class is a subclass of `Writer` to support color displays. Former
-limitations in the `framebuf.blit` method meant it could not be used for color
-display. The `CWriter` class therefore rendered glyphs one pixel at a time
-which was slow. With current firmware and compatible display drivers fast C
-blitting is used. See [2.2.3](./WRITER.md#223-a-performance-boost).
+blitting. The `CWriter` class is a subclass of `Writer` to support color
+displays which can now offer comparable performance (see below).
 
 Multiple screens are supported. On any screen multiple `Writer` or `CWriter`
 instances may be used, each using a different font. A class variable holds the
 state of each screen to ensure that the insertion point is managed across
 multiple instances/fonts.
+
+Former limitations in the `framebuf.blit` method meant it could not be used for
+color display. The `CWriter` class therefore rendered glyphs one pixel at a
+time in Python which was slow. With current firmware and compatible display
+drivers fast C blitting is used. See
+[2.2.3](./WRITER.md#223-a-performance-boost).
 
 ###### [Contents](./WRITER.md#contents)
 
@@ -177,7 +179,7 @@ import freesans20  # Font to use
 
 use_spi=False  # Tested with a 128*64 I2C connected SSD1306 display
 ssd = setup(use_spi)  # Instantiate display: must inherit from framebuf
-# Demo drawing geometric shpes
+# Demo drawing geometric shapes
 rhs = WIDTH -1
 ssd.line(rhs - 20, 0, rhs, 20, 1)  # Demo underlying framebuf methods
 square_side = 10
@@ -248,7 +250,10 @@ This takes the following args:
 This extends the `Writer` class by adding support for color displays. A color
 value is an integer whose interpretation is dependent on the display hardware
 and device driver. The Python font file uses single bit pixels. On a color
-screen these are rendered using foreground and background colors.
+screen these are rendered using foreground and background colors. Display
+drivers provide an `rgb` classmethod which converts RGB values to an integer
+suitable for the driver. RGB values are integers in range `0 <= c <= 255` (see
+example code below).
 
 ### 2.2.1 Constructor
 
@@ -291,12 +296,75 @@ monochrome displays. Possible reasons for it not being used:
  * Display driver does not include a `palette` bound variable.
  * `writer.py` not the current version.
 
+The gain in speed depends on the font size, increasing for larger fonts.
+Numbers may be found in `writer.py` code comments. Typical 10-20 pixel fonts
+see gains on the order of 5-10 times.
+
+###### [Contents](./WRITER.md#contents)
+
+## 2.3 Example color code
+
+This demo assumes an SSD1351 OLED connected to a Pyboard D. It will need to be
+adapted for other hardware. In order to run this, the following files need to
+be copied to the host's filesystem:
+ * `writer.py`
+ * `freesans20.py`
+ * The display driver. This must be copied with its directory structure from
+ [nano-gui](https://github.com/peterhinch/micropython-nano-gui/tree/master/drivers)
+ including the file `drivers/boolpalette.py`. Only the part of the tree relevant
+ to the display in use need be copied, in this case `drivers/ssd1351/ssd1351.py`.
+
+```python
+import machine
+import gc
+import time
+from writer import CWriter
+import freesans20  # Font to use
+from drivers.ssd1351.ssd1351 import SSD1351 as SSD  # Adapt for other hardware
+
+# Needed on my Pyboard D PCB to enable supply to the display
+pp = machine.Pin('EN_3V3')
+pp(1)
+time.sleep(1)
+
+# Adafruit options
+# height = 96  # 1.27 inch 96*128 (rows*cols) display
+height = 128 # 1.5 inch 128*128 display
+
+pdc = machine.Pin('Y12', machine.Pin.OUT_PP, value=0)
+pcs = machine.Pin('W32', machine.Pin.OUT_PP, value=1)
+prst = machine.Pin('Y11', machine.Pin.OUT_PP, value=1)
+spi = machine.SPI(2, baudrate=20_000_000)
+gc.collect()  # Precaution before instantiating framebuf
+ssd = SSD(spi, pcs, pdc, prst, height)  # Create a display instance
+
+# Define a few colors
+GREEN = SSD.rgb(0, 255, 0)
+RED = SSD.rgb(255,0,0)
+BLACK = SSD.rgb(0, 0, 0)
+
+# Demo drawing geometric shapes using underlying framebuf methods
+rhs = ssd.width -1
+ssd.line(rhs - 20, 0, rhs, 20, GREEN)
+square_side = 10
+ssd.fill_rect(rhs - square_side, 0, square_side, square_side, GREEN)
+
+# Instantiate a writer for a specific font
+wri = CWriter(ssd, freesans20)  # Can set verbose = False to suppress console output
+CWriter.set_textpos(ssd, 0, 0)  # In case a previous test has altered this
+wri.setcolor(RED, BLACK)  # Colors can be set in constructor or changed dynamically
+wri.printstring('Sunday\n12 Aug 2018\n10.30am')
+ssd.show()
+```
+
+###### [Contents](./WRITER.md#contents)
+
 # 3. Notes
 
 Possible future enhancements:
  1. General rendering to a rectangular area. This may be problematic as the
- `framebuf`  scroll method is only capable of scrolling the entire buffer.
+ `framebuf` scroll method is only capable of scrolling the entire buffer.
  2. Extend word wrapping to cases where words are separated by tabs or hyphens.
- 3. An asynchronous version.
+ 3. An asynchronous version. Probably needless now we have fast rendering.
 
-###### [Contents](./WRITER.md#contents)
+These may conflict too much with the desire to keep the RAM footprint low.
