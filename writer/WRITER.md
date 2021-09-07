@@ -76,9 +76,14 @@ The module has the following features:
 
 Note that these changes have significantly increased code size. On the ESP8266
 it is likely that `writer.py` will need to be frozen as bytecode. The original
-very simple version still exists as `writer_minimal.py`.
+very simple version still exists as `old_versions/writer_minimal.py`.
 
 ## 1.1 Release Notes
+
+V0.5.0 Sep 2021  
+With the release of firmware V1.17, color display now requires this version.
+This enabled the code to be simplified. For old firmware V0.4.3 is available as
+`old_versions/writer_fw_compatible.py`.
 
 V0.4.3 Aug 2021  
 Supports fast rendering of glyphs to color displays (PR7682). See
@@ -110,14 +115,18 @@ shows how to drive color displays using the `CWriter` class.
  3. `writer_demo.py` Demo using a 128*64 SSD1306 OLED display. Import to see
  usage information.
  4. `writer_tests.py` Test/demo scripts. Import to see usage information.
- 5. `writer_minimal.py` A minimal version for highly resource constrained
- devices.
 
 Sample fonts:
  1. `freesans20.py` Variable pitch font file.
  2. `courier20.py` Fixed pitch font file.
  3. `font10.py` Smaller variable pitch fonts.
  4. `font6.py`
+
+Old versions (in `old_versions` directory):
+ 1. `writer_minimal.py` A minimal version for highly resource constrained
+ devices.
+ 2. `writer_fw_compatible.py` V0.4.3. Color display will run on firmware
+ versions < 1.17.
 
 ## 1.4 Fonts
 
@@ -145,7 +154,7 @@ ultra low power monochrome display.
 
 The `Writer` class provides fast rendering to monochrome displays using bit
 blitting. The `CWriter` class is a subclass of `Writer` to support color
-displays which can now offer comparable performance (see below).
+displays which now offers comparable performance (see below).
 
 Multiple screens are supported. On any screen multiple `Writer` or `CWriter`
 instances may be used, each using a different font. A class variable holds the
@@ -264,6 +273,9 @@ This takes the following args:
  4. `bgcolor=None` Background color. If `None` a monochrome display is assumed.
  5. `verbose=True` If `True` the constructor emits console printout.
 
+The constructor checks for suitable firmware and also for a compatible device
+driver: an `OSError` is raised if these are absent.
+
 ### 2.2.2 Methods
 
 All methods of the base class are supported. Additional method:  
@@ -281,24 +293,12 @@ rendered in foreground color on background color (or reversed if `invert` is
 
 A firmware change [PR7682](https://github.com/micropython/micropython/pull/7682)
 enables a substantial improvement to text rendering speed on color displays.
-This is in daily builds and will be incorporated in V1.17. The initialisation
-code checks for suitable firmware and also for a compatible device driver. If
-these are absent the old slower method of rendering is used.
+This was incorporated in firmware V1.17, and `writer.py` requires this or later
+if using a color display.
 
-The module has a `fast_mode` variable which is set `True` on import if the
-firmware supports fast rendering. User code should treat this as read-only. The
-value of this is meaningless for monochrome displays which always render fast.
-
-If the `verbose` constructor arg is `True` a message will be printed on startup
-indicating whether fast mode is in use. As above, this is meaningless for
-monochrome displays. Possible reasons for it not being used:
- * Firmware not recent enough.
- * Display driver does not include a `palette` bound variable.
- * `writer.py` not the current version.
-
-The gain in speed depends on the font size, increasing for larger fonts.
-Numbers may be found in `writer.py` code comments. Typical 10-20 pixel fonts
-see gains on the order of 5-10 times.
+The gain in speed resulting from this firmware change depends on the font size,
+increasing for larger fonts. Numbers may be found in `writer.py` code comments.
+Typical 10-20 pixel fonts see gains on the order of 5-10 times.
 
 ###### [Contents](./WRITER.md#contents)
 
