@@ -53,7 +53,8 @@ The `CWriter` class (from nanogui): `Label` objects in two fonts.
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.2 [Methods](./WRITER.md#222-methods)  
   2.3 [Example color code](./WRITER.md#23-example-color-code)  
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.3 [Performance](./WRITER.md#223-performance) A firmware enhancement for color displays.  
- 3. [Notes](./WRITER.md#3-notes)
+ 3. [Icons](./WRITER.md#3-icons) How to render simple icons.  
+ 4. [Notes](./WRITER.md#4-notes)
 
 ###### [Main README](../README.md)
 
@@ -359,7 +360,16 @@ ssd.show()
 
 ###### [Contents](./WRITER.md#contents)
 
-# 3. Notes
+# 3. Icons
+
+It is possible to create simple icons, for example to create micro-gui
+pushbuttons with media playback symbols. Take an arbitrary free font and use a
+font editor to replace the glyphs for 'A', 'B', 'C'... with chosen symbols.
+Save this modified font under a new name. Then run `font_to_py` to create a
+Python font in a chosen size and comprising only those characters (`-c ABCDE`).
+Instantiate the buttons with e.g. `text="A"`.
+
+# 4. Notes
 
 Possible future enhancements:
  1. General rendering to a rectangular area. This may be problematic as the
