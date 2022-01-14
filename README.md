@@ -39,7 +39,8 @@ This comprises four components, links to docs below:
  industry standard font file to Python source. See below.
  2. [Writer and CWriter classes](./writer/WRITER.md) These facilitate rendering
  text to a monochrome or colour display having a suitable device driver.
- 3. [Creating icon fonts](./icon_fonts/README.md)
+ 3. [Creating icon fonts](./icon_fonts/README.md) Ways to incorporate icons in
+ a Python font file.
  4. [Device driver notes](./writer/DRIVERS.md). Notes for authors of display
  device drivers. Provides details of the font file format and information on
  ensuring comptibility with the `Writer` classes.
