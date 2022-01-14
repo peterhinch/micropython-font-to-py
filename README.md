@@ -33,13 +33,14 @@ The resultant file is usable with two varieties of display device drivers:
 
 # 2. Solution
 
-This comprises three components, links to docs below:
+This comprises four components, links to docs below:
 
- 1. [font_to_py.py](./FONT_TO_PY.md) This utility runs on a PC and converts a
- font file to Python source. See below.
+ 1. [font_to_py.py](./FONT_TO_PY.md) This utility runs on a PC and converts an
+ industry standard font file to Python source. See below.
  2. [Writer and CWriter classes](./writer/WRITER.md) These facilitate rendering
  text to a monochrome or colour display having a suitable device driver.
- 3. [Device driver notes](./writer/DRIVERS.md). Notes for authors of display
+ 3. [Creating icon fonts](./icon_fonts/README.md)
+ 4. [Device driver notes](./writer/DRIVERS.md). Notes for authors of display
  device drivers. Provides details of the font file format and information on
  ensuring comptibility with the `Writer` classes.
 

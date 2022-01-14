@@ -1,0 +1,7 @@
+# Filenames for media player icons
+default.c
+play.c  # Test
+stop.c
+pause.c
+back.c
+fwd.c

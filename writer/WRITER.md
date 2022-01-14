@@ -369,6 +369,9 @@ Save this modified font under a new name. Then run `font_to_py` to create a
 Python font in a chosen size and comprising only those characters (`-c ABCDE`).
 Instantiate the buttons with e.g. `text="A"`.
 
+Alternatively icons can be created as bitmaps and converted to Python font
+files as [described here](../icon_fonts/README.md).
+
 # 4. Notes
 
 Possible future enhancements:
