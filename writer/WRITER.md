@@ -4,6 +4,8 @@ These classes facilitate rendering Python font files to displays where the
 display driver is subclassed from the `framebuf` class. Basic support is for
 scrolling text display using multiple fonts.
 
+#### [Supported displays](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md)
+
 Two cross-platform GUI libraries build on this to provide a variety of widgets.
 These are:
  * [nano-gui](https://github.com/peterhinch/micropython-nano-gui) An extremely
