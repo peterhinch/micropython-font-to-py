@@ -2,9 +2,10 @@
 
 These classes facilitate rendering Python font files to displays where the
 display driver is subclassed from the `framebuf` class. Basic support is for
-scrolling text display using multiple fonts.
+scrolling text display using multiple fonts. There is a growing list of
+displays with compatible drivers, see
 
-#### [Supported displays](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md)
+### [Supported displays document](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md)
 
 Two cross-platform GUI libraries build on this to provide a variety of widgets.
 These are:
@@ -44,7 +45,6 @@ The `CWriter` class (from nanogui): `Label` objects in two fonts.
   1.2 [Hardware](./WRITER.md#12-hardware)  
   1.3 [Files](./WRITER.md#13-files)  
   1.4 [Fonts](./WRITER.md#14-fonts)  
-  1.5 [Supported displays](./WRITER.md#15-supported-displays)  
  2. [Writer and CWriter classes](./WRITER.md#2-writer-and-cwriter-classes)  
   2.1 [The Writer class](./WRITER.md#21-the-writer-class) For monochrome displays.  
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.1.1 [Static Method](./WRITER.md#211-static-method)  
@@ -137,19 +137,6 @@ Python font files should be created using `font-to-py.py` using horizontal
 mapping (`-x` option). The `-r` option is not required. If RAM is critical
 fonts may be frozen as bytecode reducing the RAM impact of each font to about
 340 bytes. This is highly recommended.
-
-## 1.5 Supported displays
-
-These include:
- * The official [SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
- * The [PCD8544/Nokia 5110](https://github.com/mcauser/micropython-pcd8544.git).
-
-The nano-gui repo includes a growing list of display drivers compatible with
-`writer.py`. It may be found in
-[the nano-gui docs](https://github.com/peterhinch/micropython-nano-gui/blob/master/README.md#12-description).
-
-Supported technologies are monochrome and color OLED, TFT, ePaper and the Sharp
-ultra low power monochrome display.
 
 ###### [Contents](./WRITER.md#contents)
 
