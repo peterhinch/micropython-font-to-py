@@ -51,12 +51,12 @@ The `CWriter` class (from nanogui): `Label` objects in two fonts.
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.1.2.[Constructor](./WRITER.md#212-constructor)  
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.1.3 [Methods](./WRITER.md#213-methods)  
   2.2 [The CWriter class](./WRITER.md#22-the-cwriter-class) For colour displays.  
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.1 [Constructor](./WRITER.md#221-constructor)  
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.2 [Methods](./WRITER.md#222-methods)  
-  2.3 [Example color code](./WRITER.md#23-example-color-code)  
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.3 [Performance](./WRITER.md#223-performance) A firmware enhancement for color displays.  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.1 [Static Method](./WRITER.md#221-static-method)  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.2 [Constructor](./WRITER.md#221-constructor)  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.3 [Methods](./WRITER.md#222-methods)  
+  2.3 [Example color code](./WRITER.md#23-example-color-code) For most display drivers.  
+  2.4 [Use with 4 bit drivers](./WRITER.md#24-use-with-4-bit-drivers) Color definition uses a different technique.  
  3. [Icons](./WRITER.md#3-icons) How to render simple icons.  
- 4. [Notes](./WRITER.md#4-notes)
 
 ###### [Main README](../README.md)
 
@@ -83,6 +83,8 @@ very simple version still exists as `old_versions/writer_minimal.py`.
 
 ## 1.1 Release Notes
 
+V0.5.1 Dec 2022__
+Add support for 4 bit color display drivers.
 V0.5.0 Sep 2021  
 With the release of firmware V1.17, color display now requires this version.
 This enabled the code to be simplified. For old firmware V0.4.3 is available as
@@ -97,11 +99,6 @@ Improved handling of the `col_clip` and `wrap` options. Improved accuracy
 avoids needless word wrapping. The clip option now displays as much of the last
 visible glyph as possible: formerly a glyph which would not fit in its entirety
 was discarded.
-
-The inverted display option has been withdrawn. It added significant code size
-and was not an optimal solution. Display inversion should be done at the device
-driver level. Such a solution works for graphics objects and GUI widgets, while
-the old option only affected rendered text.
 
 ## 1.2 Hardware
 
@@ -254,6 +251,23 @@ drivers provide an `rgb` classmethod which converts RGB values to an integer
 suitable for the driver. RGB values are integers in range `0 <= c <= 255` (see
 example code below).
 
+### 2.2.1 Static method
+
+The `CWriter` class has one static method `create_color`. This is exclusively
+for use with 4 bit color display drivers. It populates the driver's color
+lookup table. Args:
+ 1. `ssd` The display instance.
+ 2. `idx` Color number in range 0 <= idx <= 15. These are arbitrary but by
+ convention 0 is black and 15 white.
+ 3. `r` Red value. Values are in range 0 <= red <= 255.
+ 4. `g` Green value.
+ 5. `b` Blue value.
+
+The return value is the `idx` value, hence a color can be defined as
+```python
+GREEN = CWriter.create_color(ssd, 1, 0, 255, 0)
+```
+
 ### 2.2.1 Constructor
 
 This takes the following args:  
@@ -278,17 +292,6 @@ All methods of the base class are supported. Additional method:
 The `printstring` method works as per the base class except that the string is
 rendered in foreground color on background color (or reversed if `invert` is
 `True`).
-
-### 2.2.3 Performance
-
-A firmware change [PR7682](https://github.com/micropython/micropython/pull/7682)
-enables a substantial improvement to text rendering speed on color displays.
-This was incorporated in firmware V1.17, and `writer.py` requires this or later
-if using a color display.
-
-The gain in speed resulting from this firmware change depends on the font size,
-increasing for larger fonts. Numbers may be found in `writer.py` code comments.
-Typical 10-20 pixel fonts see gains on the order of 5-10 times.
 
 ###### [Contents](./WRITER.md#contents)
 
@@ -346,7 +349,47 @@ wri.setcolor(RED, BLACK)  # Colors can be set in constructor or changed dynamica
 wri.printstring('Sunday\n12 Aug 2018\n10.30am')
 ssd.show()
 ```
+## 2.4 Use with 4 bit drivers
 
+Some color display drivers for larger displays use 4-bit colors: this achieves
+a substantial reduction in the size of the frame buffer at the cost of limiting
+the number of colors that can be displayed. The driver expands the colors at
+run time using a lookup table.
+
+This means that colors must be defined using the `create_color` static method
+described above.
+```python
+from machine import SPI, Pin
+from writer import CWriter
+import freesans20  # Font to use
+from drivers.ili93xx.ili9341 import ILI9341 as SSD
+
+spi = SPI(0, sck=Pin(6), mosi=Pin(7), miso=Pin(4), baudrate=30_000_000)
+dc = Pin(8, Pin.OUT, value=0)
+cs = Pin(10, Pin.OUT, value=1)
+rst = Pin(9, Pin.OUT, value=1)
+ssd = SSD(spi, cs, dc, rst)
+
+# Define a few colors
+BLACK = CWriter.create_color(ssd, 0, 0, 0, 0)
+GREEN = CWriter.create_color(ssd, 1, 0, 255, 0)
+RED = CWriter.create_color(ssd, 2, 255,0,0)
+YELLOW = CWriter.create_color(ssd, 3, 255, 255, 0)
+# Demo drawing geometric shapes using underlying framebuf methods
+rhs = ssd.width -1
+ssd.line(rhs - 20, 0, rhs, 20, GREEN)
+square_side = 10
+ssd.fill_rect(rhs - square_side, 0, square_side, square_side, GREEN)
+
+# Instantiate a writer for a specific font
+wri = CWriter(ssd, freesans20)  # Can set verbose = False to suppress console output
+CWriter.set_textpos(ssd, 0, 0)  # In case a previous test has altered this
+wri.setcolor(RED, BLACK)  # Colors can be set in constructor or changed dynamically
+wri.printstring('Tuesday\n6th December 2020\n10.30am\n')
+wri.setcolor(YELLOW, BLACK)
+wri.printstring('Running on a 4-bit driver.')
+ssd.show()
+```
 ###### [Contents](./WRITER.md#contents)
 
 # 3. Icons
@@ -360,13 +403,3 @@ Instantiate the buttons with e.g. `text="A"`.
 
 Alternatively icons can be created as bitmaps and converted to Python font
 files as [described here](../icon_fonts/README.md).
-
-# 4. Notes
-
-Possible future enhancements:
- 1. General rendering to a rectangular area. This may be problematic as the
- `framebuf` scroll method is only capable of scrolling the entire buffer.
- 2. Extend word wrapping to cases where words are separated by tabs or hyphens.
- 3. An asynchronous version. Probably needless now we have fast rendering.
-
-These may conflict too much with the desire to keep the RAM footprint low.
