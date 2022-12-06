@@ -373,7 +373,7 @@ ssd = SSD(spi, cs, dc, rst)
 # Define a few colors
 BLACK = CWriter.create_color(ssd, 0, 0, 0, 0)
 GREEN = CWriter.create_color(ssd, 1, 0, 255, 0)
-RED = CWriter.create_color(ssd, 2, 255,0,0)
+RED = CWriter.create_color(ssd, 2, 255, 0, 0)
 YELLOW = CWriter.create_color(ssd, 3, 255, 255, 0)
 # Demo drawing geometric shapes using underlying framebuf methods
 rhs = ssd.width -1
