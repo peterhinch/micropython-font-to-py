@@ -418,10 +418,13 @@ class Font(dict):
             append_data(data, self.charset[0])  # data[0] is the default char
             for char in sorted(self.keys()):
                 sparse += ord(char).to_bytes(2, byteorder='little')
+                pad = len(data) % 8
+                if pad:  # Ensure len(data) % 8 == 0
+                    data += bytearray(8 - pad)
                 try:
-                    sparse += (len(data)).to_bytes(2, byteorder='little')  # Start
+                    sparse += (len(data) >> 3).to_bytes(2, byteorder='little')  # Start
                 except OverflowError:
-                    raise ValueError("Total size of font bitmap exceeds 65535 bytes.")
+                    raise ValueError("Total size of font bitmap exceeds 524287 bytes.")
                 append_data(data, char)
         return data, index, sparse
 
@@ -458,6 +461,7 @@ def get_ch(ch):
 
 # Code emiited for large charsets, assumed by build_arrays() to be sparse.
 # Binary search of sorted sparse index.
+# Offset into data array is saved after dividing by 8
 STRSP = """_mvfont = memoryview(_font)
 _mvsp = memoryview(_sparse)
 ifb = lambda l : l[0] | (l[1] << 8)
@@ -473,7 +477,7 @@ def bs(lst, val):
         lst = lst[m:] if v < val else lst[:m]
 
 def get_ch(ch):
-    doff = bs(_mvsp, ord(ch))
+    doff = bs(_mvsp, ord(ch)) << 3
     width = ifb(_mvfont[doff : ])
 """
 
@@ -544,11 +548,13 @@ def write_data(stream, fnt, font_path, hmap, reverse, iterate, charset):
         bw_sparse.odata(sparse)
         bw_sparse.eot()
         stream.write(STRSP)
+        print("Sparse")
     else:
         bw_index = ByteWriter(stream, '_index')
         bw_index.odata(index)
         bw_index.eot()
         stream.write(STR02.format(minchar, maxchar))
+        print("Normal")
     if hmap:
         stream.write(STR02H.format(height))
     else:
