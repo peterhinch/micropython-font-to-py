@@ -418,7 +418,10 @@ class Font(dict):
             append_data(data, self.charset[0])  # data[0] is the default char
             for char in sorted(self.keys()):
                 sparse += ord(char).to_bytes(2, byteorder='little')
-                sparse += (len(data)).to_bytes(2, byteorder='little')  # Start
+                try:
+                    sparse += (len(data)).to_bytes(2, byteorder='little')  # Start
+                except OverflowError:
+                    raise ValueError("Total size of font bitmap exceeds 65535 bytes.")
                 append_data(data, char)
         return data, index, sparse
 
