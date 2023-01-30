@@ -11,7 +11,12 @@ resource-limited targets: the font file may be incorporated into a firmware
 build such that it occupies flash memory rather than scarce RAM. Python code
 built into firmware is known as frozen bytecode.
 
-## 1.1 Recent revisions
+## 1.1 Revision history
+
+30 Jan 2023 V0.41 With thanks to @ferrolive (Igor Oliveira) who supplied the
+charset file.
+ 1. Charset file enables Chinese, Japanese and Korean glyphs to be specified.
+ 2. Now allows much larger output files: sparse index is now 24 bit.
 
 1 Feb 2021 V0.4 With thanks to @enigmaniac for the suggestion and code ideas.
  1. Now supports `bdf` and `pcf` font files for better results at small sizes.
