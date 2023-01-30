@@ -1,3 +1,10 @@
+# Chinese Japanese and Korean characters
+
+The file `chinese_japanese` contains the following characters. It may be used
+(in full, or edited) to perpare Python font files for these languages with the
+`-k` or `--charset_file` option. The source TTF or OTF file must contain the
+relevant glyphs. 
+
 # charset range
 
 |language|range|
