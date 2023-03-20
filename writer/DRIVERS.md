@@ -20,13 +20,17 @@ If a device subclasses `framebuf.FrameBuffer` the following libraries enhance
 its capability. The [Writer](./WRITER.md) class enables it to use multiple
 fonts with additional functionality such as word wrap, string metrics and tab
 handling. The [nano-gui](https://github.com/peterhinch/micropython-nano-gui.git)
-provides rudimentary GUI capability.
+provides rudimentary GUI displayt capability with minimal RAM use. The
+[micro-gui](https://github.com/peterhinch/micropython-micro-gui) library is
+more fully featured, providing a means of user input at some cost in size and
+complexity.
 
 If a driver relies on a buffer located on the display device, the means of
 controlling the text insertion point, performing partial buffer updates and
 executing graphics primitives will be device dependent. If the functionality of
 the `writer` or `nanogui` libraries are required it will need to be
-implemented at device driver level.
+implemented at device driver level. Authors of such code will need to know the
+format of the Python font file which is provided in this doc.
 
 ###### [Main README](../README.md)
 
@@ -56,23 +60,17 @@ regardless of the mapping used in the device driver's `FrameBuffer`: the
 
 ## Example drivers
 
-The following drivers are subclassed from `framebuf.FrameBuffer` and have been
-tested with `writer.py` and `nanogui.py`.
+See [Supported displays document](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md)
+for a full list. These drivers are subclassed from `framebuf.FrameBuffer` and
+have been tested with `writer`, `nanogui` and `microgui`. The following are a
+few samples:
 
  * The [SSD1306 OLED driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py)
  * The [Nokia 5110](https://github.com/mcauser/micropython-pcd8544/blob/master/pcd8544_fb.py)
  * The [SSD1331 colour OLED](https://github.com/peterhinch/micropython-nano-gui/blob/master/drivers/ssd1331/ssd1331.py)
  * The [HX1230 96x68 LCD](https://github.com/mcauser/micropython-hx1230/blob/master/hx1230_fb.py)
 
-The latter example illustrates a very simple driver which provides full access
-to `writer.py` and `nanogui.py` libraries.
-
-Because `nanogui` uses the Writer classes, all `nanogui` drivers support code
-using `Writer` or `CWriter`. They are lightweight and provide a minimum
-functionality necessary to support these classes.
-[This is the current list](https://github.com/peterhinch/micropython-nano-gui#12-description).
-This list is more current as `nanogui` is being expanded to support a wider
-range of displays.
+The latter example illustrates a very simple driver.
 
 # Drivers using the display buffer
 

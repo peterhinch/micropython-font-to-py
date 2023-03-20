@@ -297,6 +297,8 @@ rendered in foreground color on background color (or reversed if `invert` is
 
 ## 2.3 Example color code
 
+The following will not work with 4-bit drivers: see [section 2.4](./WRITER.md#24-use-with-4-bit-drivers).
+
 This demo assumes an SSD1351 OLED connected to a Pyboard D. It will need to be
 adapted for other hardware. In order to run this, the following files need to
 be copied to the host's filesystem:
@@ -331,7 +333,7 @@ spi = machine.SPI(2, baudrate=20_000_000)
 gc.collect()  # Precaution before instantiating framebuf
 ssd = SSD(spi, pcs, pdc, prst, height)  # Create a display instance
 
-# Define a few colors
+# Define a few colors (for 4-bit drivers this is done differently)
 GREEN = SSD.rgb(0, 255, 0)
 RED = SSD.rgb(255,0,0)
 BLACK = SSD.rgb(0, 0, 0)
@@ -370,7 +372,7 @@ cs = Pin(10, Pin.OUT, value=1)
 rst = Pin(9, Pin.OUT, value=1)
 ssd = SSD(spi, cs, dc, rst)
 
-# Define a few colors
+# Define a few colors: populates the lookup table
 BLACK = CWriter.create_color(ssd, 0, 0, 0, 0)
 GREEN = CWriter.create_color(ssd, 1, 0, 255, 0)
 RED = CWriter.create_color(ssd, 2, 255, 0, 0)
