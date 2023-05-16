@@ -38,7 +38,7 @@ format of the Python font file which is provided in this doc.
 
 Where the buffer is held on the MicroPython host the driver should be
 subclassed from the official `framebuf.FrameBuffer` class. An example of such a
-driver is the [official SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
+driver is the [official SSD1306 driver](https://github.com/micropython/micropython-lib/blob/master/micropython/drivers/display/ssd1306/ssd1306.py).
 In addition the driver class should have bound variables `width` and `height`
 containing the size of the display in pixels, plus a `show` method which copies
 the buffer to the physical device.
@@ -65,7 +65,7 @@ for a full list. These drivers are subclassed from `framebuf.FrameBuffer` and
 have been tested with `writer`, `nanogui` and `microgui`. The following are a
 few samples:
 
- * The [SSD1306 OLED driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py)
+ * The [SSD1306 OLED driver](https://github.com/micropython/micropython-lib/blob/master/micropython/drivers/display/ssd1306/ssd1306.py)
  * The [Nokia 5110](https://github.com/mcauser/micropython-pcd8544/blob/master/pcd8544_fb.py)
  * The [SSD1331 colour OLED](https://github.com/peterhinch/micropython-nano-gui/blob/master/drivers/ssd1331/ssd1331.py)
  * The [HX1230 96x68 LCD](https://github.com/mcauser/micropython-hx1230/blob/master/hx1230_fb.py)
