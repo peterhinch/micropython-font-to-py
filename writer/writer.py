@@ -24,7 +24,6 @@
 import framebuf
 from uctypes import bytearray_at, addressof
 from sys import implementation
-import os
 
 __version__ = (0, 5, 1)
 
