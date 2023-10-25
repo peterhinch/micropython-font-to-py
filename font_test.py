@@ -1,5 +1,4 @@
 #! /usr/bin/env python3
-# -*- coding: utf-8 -*-
 
 # The MIT License (MIT)
 #
@@ -28,64 +27,68 @@
 # output to the REPL using a font file created by this utility.
 
 import sys
-import os
 from importlib import import_module
-from font_to_py import Font, write_font
+
+# from font_to_py import Font, write_font
 
 # Utility functions
 
+
 def validate_hmap(data, height, width):
-    bpr = (width - 1)//8 + 1
-    msg = 'Horizontal map, invalid data length got {} expected {}'
+    bpr = (width - 1) // 8 + 1
+    msg = "Horizontal map, invalid data length got {} expected {}"
     assert len(data) == bpr * height, msg.format(len(data), bpr * height)
 
 
 def validate_vmap(data, height, width):
-    bpc = (height - 1)//8 + 1
-    msg = 'Vertical map, invalid data length got {} expected {}'
+    bpc = (height - 1) // 8 + 1
+    msg = "Vertical map, invalid data length got {} expected {}"
     assert len(data) == bpc * width, msg.format(len(data), bpc * width)
 
 
 # Routines to render to REPL
 def render_row_hmap(data, row, height, width, reverse):
     validate_hmap(data, height, width)
-    bytes_per_row = (width - 1)//8 + 1
+    bytes_per_row = (width - 1) // 8 + 1
     for col in range(width):
         byte = data[row * bytes_per_row + col // 8]
         if reverse:
             bit = (byte & (1 << (col % 8))) > 0
         else:
             bit = (byte & (1 << (7 - (col % 8)))) > 0
-        char = '#' if bit else '.'
-        print(char, end='')
+        char = "#" if bit else "."
+        print(char, end="")
 
 
 def render_row_vmap(data, row, height, width, reverse):
     validate_vmap(data, height, width)
-    bytes_per_col = (height - 1)//8 + 1
+    bytes_per_col = (height - 1) // 8 + 1
     for col in range(width):
-        byte = data[col * bytes_per_col + row//8]
+        byte = data[col * bytes_per_col + row // 8]
         if reverse:
             bit = (byte & (1 << (7 - (row % 8)))) > 0
         else:
             bit = (byte & (1 << (row % 8))) > 0
-        char = '#' if bit else '.'
-        print(char, end='')
+        char = "#" if bit else "."
+        print(char, end="")
 
 
 # Render a string to REPL using a specified Python font file
 # usage font_test.test_font('freeserif', 'abc')
 # Default tests outliers with fonts created with -k extended
-def test_font(fontfile, string='abg'+chr(126)+chr(127)+chr(176)+chr(177)+chr(937)+chr(981)):
+def test_font(
+    fontfile,
+    string="abg" + chr(126) + chr(127) + chr(176) + chr(177) + chr(937) + chr(981),
+):
     if fontfile in sys.modules:
         del sys.modules[fontfile]  # force reload
     myfont = import_module(fontfile)
-    print(('Horizontal' if myfont.hmap() else 'Vertical') + ' map')
-    print(('Reverse' if myfont.reverse() else 'Normal') + ' bit order')
-    print(('Fixed' if myfont.monospaced() else 'Proportional') + ' spacing')
-    print('Dimensions height*max_width {} * {}'.format(myfont.height(), myfont.max_width()))
+    print(("Horizontal" if myfont.hmap() else "Vertical") + " map")
+    print(("Reverse" if myfont.reverse() else "Normal") + " bit order")
+    print(("Fixed" if myfont.monospaced() else "Proportional") + " spacing")
+    print(f"Dimensions height*max_width {myfont.height()} * {myfont.max_width()}")
     s, e = myfont.min_ch(), myfont.max_ch()
-    print('Start char "{}" (ord {}) end char "{}" (ord {})'.format(chr(s), s, chr(e), e))
+    print(f'Start char "{chr(s)}" (ord {s}) end char "{chr(e)}" (ord {e})')
 
     height = myfont.height()
     for row in range(height):
@@ -97,7 +100,8 @@ def test_font(fontfile, string='abg'+chr(126)+chr(127)+chr(176)+chr(177)+chr(937
                 render_row_vmap(data, row, height, width, myfont.reverse())
         print()
 
-usage = '''Usage:
+
+usage = """Usage:
 ./font_test fontfile string
 fontfile is a Python font file name with the .py extension omitted.
 string is an optional string to render.
@@ -105,10 +109,10 @@ If string is omitted a challenging test string will be rendered. This
 is for fonts created with -k extended. Other fonts will show "?" for
 nonexistent glyphs.
 Requires Python 3.2 or newer.
-'''
+"""
 
 if __name__ == "__main__":
-    if len(sys.argv) < 2 or sys.argv[1] == '--help':
+    if len(sys.argv) < 2 or sys.argv[1] == "--help":
         print(usage)
     elif len(sys.argv) == 2:
         test_font(sys.argv[1])
