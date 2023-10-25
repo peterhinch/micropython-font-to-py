@@ -88,13 +88,13 @@ A font file is imported in the usual way e.g. `import font14`. Python font
 files contain the following functions. These return values defined by the
 arguments which were provided to `font_to_py.py`:
 
-`height` Returns height in pixels.  
-`max_width` Returns maximum width of a glyph in pixels.  
-`baseline` Offset from top of glyph to the baseline.  
-`hmap` Returns `True` if font is horizontally mapped.  
-`reverse` Returns `True` if bit reversal was specified.  
-`monospaced` Returns `True` if monospaced rendering was specified.  
-`min_ch` Returns the ordinal value of the lowest character in the file.  
+`height` Returns height in pixels.
+`max_width` Returns maximum width of a glyph in pixels.
+`baseline` Offset from top of glyph to the baseline.
+`hmap` Returns `True` if font is horizontally mapped.
+`reverse` Returns `True` if bit reversal was specified.
+`monospaced` Returns `True` if monospaced rendering was specified.
+`min_ch` Returns the ordinal value of the lowest character in the file.
 `max_ch` Returns the ordinal value of the highest character in the file.
 
 Glyphs are returned with the `get_ch` function. Its argument is a Unicode

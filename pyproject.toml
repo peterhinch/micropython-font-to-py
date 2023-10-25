@@ -1,0 +1,41 @@
+[tool.poetry]
+name = "micropython-font-to-py"
+version = "0.34.0"
+description = ""
+authors = ["Peter Hinch"]
+repository = "https://github.com/peterhinch/micropython-font-to-py"
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "font_to_py" }]
+keywords = ["micropython", "font"]
+include = [
+    { path = "icon_fonts/**/*", format = "sdist" },
+    { path = "writer/**/*", format = "sdist" },
+    { path = "c_to_python_font.py", format = "sdist" },
+    { path = "font_test.py", format = "sdist" },
+    { path = "FONT_TO_PY.md", format = ["sdist", "wheel"] },
+    { path = "Chinese_Japanese*", format = ["sdist", "wheel"] },
+    { path = "cyrillic", format = ["sdist", "wheel"] },
+    { path = "extended", format = ["sdist", "wheel"] },
+]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+freetype-py = "^2.4.0"
+click = "^8.1.7"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.9.1"
+ruff = "^0.0.292"
+pre-commit = "^3.4.0"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+select = ["E", "F", "B", "Q", "N", "I", "UP", "PL", "RUF", "C90"]
+line-length = 120
+
+[tool.poetry.scripts]
+font-to-py = "font_to_py.cli:main"

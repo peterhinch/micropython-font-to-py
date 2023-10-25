@@ -104,7 +104,7 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
  set. See below.
  * -k or --charset_file Obtain the character set from a file. Typical use is
  for alternative character sets such as Cyrillic: the file must contain the
- character set to be included. An example file is `cyrillic`. Another is 
+ character set to be included. An example file is `cyrillic`. Another is
  `extended` which adds unicode characters `°μπωϕθαβγδλΩ` to those in the
  original ASCII set of printable characters. At risk of stating the obvious
  this will only produce useful results if the source font file includes all
@@ -117,7 +117,7 @@ usage but it will conserve flash. Example usage for a digital clock font:
 ```shell
 $ font_to_py.py Arial.ttf 20 arial_clock.py -c 1234567890:
 ```
-Example usage with the -k option:  
+Example usage with the -k option:
 ```shell
 font_to_py.py FreeSans.ttf 20 freesans_cyr_20.py -k cyrillic
 font_to_py.py -x -k extended FreeSans.ttf 17 font10.py
@@ -173,7 +173,7 @@ The detailed layout of the Python file may be seen [here](./writer/DRIVERS.md).
 
 # 4. Python font files
 
-Users of the `Writer` or `CWriter` classes or of 
+Users of the `Writer` or `CWriter` classes or of
 [nano-gui](https://github.com/peterhinch/micropython-nano-gui) do not need to
 study the file format. These details are provided for those wishing to access
 Python font files directly.
@@ -191,10 +191,10 @@ They include the following functions:
  6. `monospaced()` `True` if bitmaps were created with fixed pitch.
  7. `min_ch()` Returns smallest ordinal value in font.
  8. `max_ch()` Largest ordinal value in font.
- 9. `get_ch()` Arg: a Unicode character. Returns three items:  
- A memoryview into the bitmap for that character.  
- Bitmap height in pixels. Equal to `height()` above.  
- Bitmap width in pixels.  
+ 9. `get_ch()` Arg: a Unicode character. Returns three items:
+ A memoryview into the bitmap for that character.
+ Bitmap height in pixels. Equal to `height()` above.
+ Bitmap width in pixels.
 
 See [this link](https://stackoverflow.com/questions/27631736/meaning-of-top-ascent-baseline-descent-bottom-and-leading-in-androids-font)
 for an explanation of `baseline`.
@@ -224,9 +224,9 @@ Only the following optional arguments are valid:
 The code is released under the MIT licence. The `font_to_py.py` utility
 requires Python 3.2 or later.
 
-The module relies on [Freetype](https://www.freetype.org/) which is included in most Linux distributions.  
+The module relies on [Freetype](https://www.freetype.org/) which is included in most Linux distributions.
 It uses the [Freetype Python bindings](http://freetype-py.readthedocs.io/en/latest/index.html)
-which will need to be installed.  
+which will need to be installed.
 My solution draws on the excellent example code written by Daniel Bader. This
 may be viewed [here](https://dbader.org/blog/monochrome-font-rendering-with-freetype-and-python)
 and [here](https://gist.github.com/dbader/5488053).
