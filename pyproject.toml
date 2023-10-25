@@ -17,6 +17,7 @@ include = [
     { path = "Chinese_Japanese*", format = ["sdist", "wheel"] },
     { path = "cyrillic", format = ["sdist", "wheel"] },
     { path = "extended", format = ["sdist", "wheel"] },
+    { path = "latin15", format = ["sdist", "wheel"] },
 ]
 
 [tool.poetry.dependencies]
