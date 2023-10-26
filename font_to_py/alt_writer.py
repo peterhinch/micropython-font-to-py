@@ -46,7 +46,7 @@ GET_CH_I_TPL = """def get_ch(self, ch):
         return l[0] | (l[1] << 8)
 
     oc = ord(ch)
-    ioff = 2 * (oc - 32 + 1) if oc >= self.min_ch and oc <= self.max_ch else 0
+    ioff = 2 * (oc - self.min_ch + 1) if oc >= self.min_ch and oc <= self.max_ch else 0
     doff = ifb(self._index[ioff:])
     width = ifb(self._font[doff:])"""
 
