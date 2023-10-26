@@ -34,6 +34,7 @@ from pathlib import Path
 import click
 import freetype
 
+from .alt_writer import write_alt_font
 from .bin_writer import write_binary_font
 from .py_writer import write_font
 
@@ -71,6 +72,12 @@ CONTEXT_SETTINGS = dict(max_content_width=100)
     "--binary",
     is_flag=True,
     help="Produce binary (random access) font file.",
+)
+@click.option(
+    "-a",
+    "--alt",
+    is_flag=True,
+    help="Use alt python writer (EXPERIMENTAL).",
 )
 @click.option(
     "-i",
@@ -124,6 +131,7 @@ def main(  # noqa: C901, PLR0913, PLR0912
     reverse,
     fixed,
     binary,
+    alt,
     iterate,
     smallest,
     largest,
@@ -205,20 +213,38 @@ def main(  # noqa: C901, PLR0913, PLR0912
             click.echo(f"Found font with size {height!s}")
 
         click.echo("Writing Python font file.")
-        if not write_font(
-            outfile,
-            infile,
-            height,
-            fixed,
-            xmap,
-            reverse,
-            smallest,
-            largest,
-            errchar,
-            cset,
-            iterate,
-            bitmapped,
-        ):
+        if alt:
+            res = write_alt_font(
+                outfile,
+                infile,
+                height,
+                fixed,
+                xmap,
+                reverse,
+                smallest,
+                largest,
+                errchar,
+                cset,
+                iterate,
+                bitmapped,
+            )
+        else:
+            res = write_font(
+                outfile,
+                infile,
+                height,
+                fixed,
+                xmap,
+                reverse,
+                smallest,
+                largest,
+                errchar,
+                cset,
+                iterate,
+                bitmapped,
+            )
+
+        if not res:
             sys.exit(1)
 
     click.echo(f"{outfile} written successfully.")

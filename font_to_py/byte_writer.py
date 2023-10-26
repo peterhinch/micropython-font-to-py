@@ -63,3 +63,25 @@ class ByteWriter:
         if self.bytecount:
             self._eot()
         self.stream.write("\n")
+
+
+class AltByteWriter(ByteWriter):
+    def __init__(self, stream, varname, indent=8):
+        self.stream = stream
+        self.indent = indent
+        self.stream.write(" " * self.indent + f'"{varname}": memoryview(\n')
+        self.bytecount = 0  # For line breaks
+
+    def _eol(self):
+        self.stream.write('"\n')
+
+    def _eot(self):
+        self.stream.write('"\n')
+        self.stream.write(" " * self.indent + "),\n")
+
+    def _bol(self):
+        self.stream.write(" " * (self.indent + 4) + 'b"')
+
+    def eot(self):  # User force EOL if one hasn't occurred
+        if self.bytecount:
+            self._eot()
