@@ -34,7 +34,8 @@ from pathlib import Path
 import click
 import freetype
 
-from .writer import write_binary_font, write_font
+from .bin_writer import write_binary_font
+from .py_writer import write_font
 
 if freetype.version()[0] < 1:
     click.echo("freetype version should be >= 1. Please see FONT_TO_PY.md")
