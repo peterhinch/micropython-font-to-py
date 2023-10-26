@@ -73,14 +73,14 @@ GET_CH_S_TPL = """def get_ch(self, ch):
 # Code emitted for horizontally mapped fonts.
 GET_CH_HMAP_TPL = """   
     next_offs = doff + 2 + ((width - 1)//8 + 1) * self.height
-    return _mvfont[doff + 2:next_offs], self.height, width
+    return self._font[doff + 2:next_offs], self.height, width
 
 """
 
 # Code emitted for vertically mapped fonts.
 GET_CH_VMAP_TPL = """
     next_offs = doff + 2 + ((self.height - 1)//8 + 1) * width
-    return _mvfont[doff + 2:next_offs], self.height, width
+    return self._font[doff + 2:next_offs], self.height, width
 
 """
 
