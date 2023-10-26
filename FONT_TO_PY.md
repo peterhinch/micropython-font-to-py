@@ -109,6 +109,13 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
  original ASCII set of printable characters. At risk of stating the obvious
  this will only produce useful results if the source font file includes all
  specified glyphs.
+ 
+ A charset file can easilly be created by a one-line Python
+ script. For example, the `latin15` character set file is created by:
+ 
+ ```
+ python3 -c 'print(bytearray([*range(0x20, 0x7F), *range(0xA0, 0xFF)]).decode("iso-8859-15"))' > latin15
+ ```
 
 The -c option may be used to reduce the size of the font file by limiting the
 character set. If the font file is frozen as bytecode this will not reduce RAM
