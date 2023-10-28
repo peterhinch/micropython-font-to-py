@@ -43,7 +43,7 @@ This comprises four components, links to docs below:
  a Python font file.
  4. [Device driver notes](./writer/DRIVERS.md). Notes for authors of display
  device drivers. Provides details of the font file format and information on
- ensuring comptibility with the `Writer` classes.
+ ensuring compatibility with the `Writer` classes.
 
 # 3. font_to_py.py
 
