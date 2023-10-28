@@ -49,7 +49,7 @@ installed using `pip3`. On Linux (you may need a root prompt):
 
 ```shell
 # apt-get install python3-pip
-# pip3 install freetype-py
+# pip install freetype-py
 ```
 
 # 3. Usage
@@ -104,7 +104,7 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
  set. See below.
  * -k or --charset_file Obtain the character set from a file. Typical use is
  for alternative character sets such as Cyrillic: the file must contain the
- character set to be included. An example file is `cyrillic`. Another is 
+ character set to be included. An example file is `cyrillic`. Another is
  `extended` which adds unicode characters `°μπωϕθαβγδλΩ` to those in the
  original ASCII set of printable characters. At risk of stating the obvious
  this will only produce useful results if the source font file includes all
@@ -173,7 +173,7 @@ The detailed layout of the Python file may be seen [here](./writer/DRIVERS.md).
 
 # 4. Python font files
 
-Users of the `Writer` or `CWriter` classes or of 
+Users of the `Writer` or `CWriter` classes or of
 [nano-gui](https://github.com/peterhinch/micropython-nano-gui) do not need to
 study the file format. These details are provided for those wishing to access
 Python font files directly.
