@@ -93,7 +93,9 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
 
  * -f or --fixed If specified, all characters will have the same width. By
  default fonts are assumed to be variable pitch.
- * -x or --xmap Specifies horizontal mapping (this is the default).
+ * -x or --xmap Specifies that the output file should be horizontally mapped.
+ This is the default if no mapping is specified. Most display hardware requires
+ horizontal mapping.
  * -y or --ymap Vertical mapping for specialist display hardware. Not compatible
  with `Writer` classes.
  * -r or --reverse Specifies bit reversal in each font byte.
