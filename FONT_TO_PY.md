@@ -13,6 +13,7 @@ built into firmware is known as frozen bytecode.
 
 ## 1.1 Revision history
 
+22 Mar 2024 V0.42 Default mapping is now horizontal.
 30 Jan 2023 V0.41 With thanks to @ferrolive (Igor Oliveira) who supplied the
 charset file.
  1. Charset file enables Chinese, Japanese and Korean glyphs to be specified.
@@ -92,7 +93,9 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
 
  * -f or --fixed If specified, all characters will have the same width. By
  default fonts are assumed to be variable pitch.
- * -x or --xmap Specifies horizontal mapping (default is vertical).
+ * -x or --xmap Specifies horizontal mapping (this is the default).
+ * -y or --ymap Vertical mapping for specialist display hardware. Not compatible
+ with `Writer` classes.
  * -r or --reverse Specifies bit reversal in each font byte.
  * -s or --smallest Ordinal value of smallest character to be stored. Default
  32 (ASCII space).
