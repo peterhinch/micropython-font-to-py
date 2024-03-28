@@ -105,6 +105,7 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
  * -e or --errchar Ordinal value of character to be rendered if an attempt is
  made to display an out-of-range character. Default 63 (ord("?")).
  * -i or --iterate Specialist use. See below.
+ * -b or --binary Create a binary font file. See below.
  * -c or --charset Option to restrict the characters in the font to a specific
  set. See below.
  * -k or --charset_file Obtain the character set from a file. Typical use is
@@ -136,7 +137,7 @@ Any requirement for arguments -xr will be specified in the device driver
 documentation. Bit reversal is required by some display hardware.
 
 Using the -f argument with a variable pitch source font will produce a fixed
-pitch result. A better apearance would be achieved by using a font designed as
+pitch result. A better appearance would be achieved by using a font designed as
 monospaced.
 
 There have been reports that producing fonts with Unicode characters outside
@@ -208,21 +209,26 @@ for an explanation of `baseline`.
 
 There is an option to create a binary font file, specified with a `-b` or
 `--binary` command line argument. In this instance the output filename must
-not have a `.py` extension. This is primarily intended for the e-paper driver
-in applications where the file is to be stored on the display's internal flash
-memory rather than using frozen Python modules.
-
-The technique of accessing character data from a random access file is slow
-and thus probably only applicable to devices such as e-paper where the update
-time is slow.
+not have a `.py` extension. This format was developed for an e-paper driver
+where the file was stored on the display's internal flash memory; it is not
+clear if there is a current use case.
 
 Binary files currently support only the standard ASCII character set. There is
 no error character: the device driver must ensure that seeks are within range.
+Conversion of bdf and pcf font files is currently unsupported.
+
 Only the following optional arguments are valid:
 
  * -f or --fixed.
  * -x or --xmap.
+ * -y or --ymap
  * -r or --reverse.
+
+The format of binary font files is described [here](./writer/DRIVERS.md).
+
+An alternative implementation of binary fonts may be found in
+[this repo](https://github.com/antirez/microfont). It provides for rotated
+rendering to a `FrameBuffer`.
 
 # 6. Dependencies, links and licence
 

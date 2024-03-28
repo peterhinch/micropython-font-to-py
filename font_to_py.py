@@ -591,7 +591,7 @@ def write_data(stream, fnt, font_path, hmap, reverse, iterate, charset):
 # 1    1       0x42 0xe7
 def write_binary_font(op_path, font_path, height, hmap, reverse):
     try:
-        fnt = Font(font_path, height, 32, 126, True, None, "")  # All chars have same width
+        fnt = Font(font_path, height, 32, 126, True, None, "", False)  # All chars have same width
     except freetype.ft_errors.FT_Exception:
         print("Can't open", font_path)
         return False
