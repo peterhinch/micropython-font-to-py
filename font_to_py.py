@@ -622,7 +622,7 @@ Sample usage:
 font_to_py.py FreeSans.ttf 23 freesans.py
 
 This creates a font with nominal height 23 pixels with these defaults:
-Mapping is vertical, pitch variable, character set 32-126 inclusive.
+Mapping is horizontal, pitch variable, character set 32-126 inclusive.
 Illegal characters will be rendered as "?".
 
 To specify monospaced rendering issue:
