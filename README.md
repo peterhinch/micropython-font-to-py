@@ -68,7 +68,9 @@ RAM usage when importing fonts stored as frozen bytecode.
 Converting scalable `ttf` or `otf` files programmatically works best for larger
 fonts. For small fonts it is best to use hand-designed bitmapped font files.
 These are now supported: `bdf` or `pcf` font files may be converted to Python
-source in the same format as files originating from scalable fonts.
+source in the same format as files originating from scalable fonts. See also
+[microPyEZfonts](https://github.com/easytarget/microPyEZfonts) which includes
+compatible small fonts (in `examples/fonts`).
 
 ## 3.2 Limitations
 
