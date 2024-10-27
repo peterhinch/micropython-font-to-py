@@ -114,7 +114,8 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
  `extended` which adds unicode characters `°μπωϕθαβγδλΩ` to those in the
  original ASCII set of printable characters. At risk of stating the obvious
  this will only produce useful results if the source font file includes all
- specified glyphs.
+ specified glyphs. Charset files, and any specific documentation, may be found
+ in the `charsets` directory.
 
 The -c option may be used to reduce the size of the font file by limiting the
 character set. If the font file is frozen as bytecode this will not reduce RAM
