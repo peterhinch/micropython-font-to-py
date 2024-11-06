@@ -1,10 +1,12 @@
 # font_to_py.py Creation of Python font files
 
+A PC utility for converting industry standard font files to Python source code.
+
 # 0. Contents
 
 1. [Introdction](./FONT_TO_PY.md#1-introduction) Creating Python fonts.  
  1.1 [Revision history](./FONT_TO_PY.md#11-revision-history)  
-2. [Dependencies](./FONT_TO_PY.md#2-dependencies)  
+2. [Dependencies](./FONT_TO_PY.md#2-dependencies) Installation.  
 3. [Usage](./FONT_TO_PY.md#3-usage)  
  3.1 [Arguments](./FONT_TO_PY.md#31-arguments)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.1.1 [Mandatory positional arguments](./FONT_TO_PY.md#311-mandatory-positional-arguments)  
@@ -13,11 +15,11 @@
  3.2 [The font file](./FONT_TO_PY.md#32-the-font-file) How to use the font file.  
 4. [Python font files](./FONT_TO_PY.md#4-python-font-files) Python font file format.  
 5. [Binary font files](./FONT_TO_PY.md#5-binary-font-files) Binary font file format.  
-6. [Dependencies links and licence](./FONT_TO_PY.md#6-dependencies-links-and-licence)
+6. [Dependencies links and licence](./FONT_TO_PY.md#6-dependencies-links-and-licence) Acknowledgement of sources.  
 [Appendix 1 RAM utilisation Test Results](./FONT_TO_PY.md#appendix-1-ram-utilisation-test-results)  
 [Appendix 2 Recent improvements](./FONT_TO_PY.md#appendix-2-recent-improvements)  
-[Appendix 3 Testing](./FONT_TO_PY.md#appendix-testing) A desktop utility to check fonts.  
-[Appendix 4 Custom character sets](./FONT_TO_PY.md#appendix-4-custom-character-sets) E.g. non-English character sets.  
+[Appendix 3 Testing](./FONT_TO_PY.md#appendix-3-testing) A desktop utility to check fonts.  
+[Appendix 4 Custom character sets](./FONT_TO_PY.md#appendix-4-custom-character-sets) Creating e.g. fonts having non-English character sets.  
 [Appendix 5 Iteration](./FONT_TO_PY.md#appendix-5-iteration) Enabling a font to support iteration.  
 
 # 1. Introduction
