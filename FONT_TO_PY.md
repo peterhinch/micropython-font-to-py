@@ -16,6 +16,7 @@ A PC utility for converting industry standard font files to Python source code.
 4. [Python font files](./FONT_TO_PY.md#4-python-font-files) Python font file format.  
 5. [Binary font files](./FONT_TO_PY.md#5-binary-font-files) Binary font file format.  
 6. [Dependencies links and licence](./FONT_TO_PY.md#6-dependencies-links-and-licence) Acknowledgement of sources.  
+
 [Appendix 1 RAM utilisation Test Results](./FONT_TO_PY.md#appendix-1-ram-utilisation-test-results)  
 [Appendix 2 Recent improvements](./FONT_TO_PY.md#appendix-2-recent-improvements)  
 [Appendix 3 Testing](./FONT_TO_PY.md#appendix-3-testing) A desktop utility to check fonts.  
