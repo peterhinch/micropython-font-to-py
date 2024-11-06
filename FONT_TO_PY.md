@@ -1,4 +1,26 @@
-# 1. font_to_py.py
+# font_to_py.py Creation of Python font files
+
+# 0. Contents
+
+1. [Introdction](./FONT_TO_PY.md#1-introduction) Creating Python fonts.  
+ 1.1 [Revision history](./FONT_TO_PY.md#11-revision-history)  
+2. [Dependencies](./FONT_TO_PY.md#2-dependencies)  
+3. [Usage](./FONT_TO_PY.md#3-usage)  
+ 3.1 [Arguments](./FONT_TO_PY.md#31-arguments)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.1.1 [Mandatory positional arguments](./FONT_TO_PY.md#311-mandatory-positional-arguments)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.1.2 [Optional arguments](./FONT_TO_PY.md#312-optional-arguments)  
+ &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.1.3 [The height arg](./FONT_TO_PY.md#313-the-height-arg)  
+ 3.2 [The font file](./FONT_TO_PY.md#32-the-font-file) How to use the font file.  
+4. [Python font files](./FONT_TO_PY.md#4-python-font-files) Python font file format.  
+5. [Binary font files](./FONT_TO_PY.md#5-binary-font-files) Binary font file format.  
+6. [Dependencies links and licence](./FONT_TO_PY.md#6-dependencies-links-and-licence)
+[Appendix 1 RAM utilisation Test Results](./FONT_TO_PY.md#appendix-1-ram-utilisation-test-results)  
+[Appendix 2 Recent improvements](./FONT_TO_PY.md#appendix-2-recent-improvements)  
+[Appendix 3 Testing](./FONT_TO_PY.md#appendix-testing) A desktop utility to check fonts.  
+[Appendix 4 Custom character sets](./FONT_TO_PY.md#appendix-4-custom-character-sets) E.g. non-English character sets.  
+[Appendix 5 Iteration](./FONT_TO_PY.md#appendix-5-iteration) Enabling a font to support iteration.  
+
+# 1. Introduction
 
 This PC utility converts an industry standard font file to Python source code.
 
@@ -42,6 +64,7 @@ Python files produced are interchangeable with those from prior versions: the
 API is unchanged.
 
 ###### [Main README](./README.md)
+###### [Contents](./FONT_TO_PY.md#0-contents)
 
 # 2. Dependencies
 
@@ -80,7 +103,7 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
 ```
 ## 3.1 Arguments
 
-### 3.1.1 Mandatory positional arguments:
+### 3.1.1 Mandatory positional arguments
 
  1. Font file path. Must be a ttf or otf file.
  2. Height in pixels. In the case of `bdf` or `pcf` files a height of 0 should
@@ -89,7 +112,7 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
  binary font). A warning is output if the output filename does not have a .py
  extension as the creation of a binary font file may not be intended.
 
-### 3.1.2 Optional arguments:
+### 3.1.2 Optional arguments
 
  * -f or --fixed If specified, all characters will have the same width. By
  default fonts are assumed to be variable pitch.
@@ -104,18 +127,14 @@ $ font_to_py.py -k extended FreeSans.ttf 23 my_extended_font.py
  * -l or --largest Ordinal value of largest character to be stored. Default 126.
  * -e or --errchar Ordinal value of character to be rendered if an attempt is
  made to display an out-of-range character. Default 63 (ord("?")).
- * -i or --iterate Specialist use. See below.
- * -b or --binary Create a binary font file. See below.
+ * -i or --iterate Specialist use. See [Appendix 5](./FONT_TO_PY.md#appendix-5-iteration).
+ * -b or --binary Create a binary font file. See [Binary font files](./FONT_TO_PY.md#5-binary-font-files).
  * -c or --charset Option to restrict the characters in the font to a specific
  set. See below.
  * -k or --charset_file Obtain the character set from a file. Typical use is
- for alternative character sets such as Cyrillic: the file must contain the
- character set to be included. An example file is `cyrillic`. Another is
- `extended` which adds unicode characters `°μπωϕθαβγδλΩ` to those in the
- original ASCII set of printable characters. At risk of stating the obvious
- this will only produce useful results if the source font file includes all
- specified glyphs. Charset files, and any specific documentation, may be found
- in the `charsets` directory.
+ for alternative character sets such as Cyrillic. Please see
+ [Appendix 4](./FONT_TO_PY.md#appendix-4-custom-character-sets) for details of
+ creation of custom character sets.
 
 The -c option may be used to reduce the size of the font file by limiting the
 character set. If the font file is frozen as bytecode this will not reduce RAM
@@ -147,13 +166,7 @@ achieved, use an `otf` font. I have successfully created Cyrillic and extended
 fonts from a `ttf`, so I suspect the issue may be source fonts lacking the
 required glyphs.
 
-### 3.1.3 The -i or --iterate arg
-
-This is for specialist applications; it causes a generator function `glyphs` to
-be included in the Python font file. A generator instantiated with this will
-yield `bitmap`, `height`, and `width` for every glyph in the font.
-
-### 3.1.4 The height arg
+### 3.1.3 The height arg
 
 In the case of scalable `ttf` or `otf` source files the specified height is a
 target. The algorithm gets as close to the target height as possible (usually
@@ -177,6 +190,8 @@ The `myfont` module name will then be used to instantiate a `Writer` object
 to render strings on demand. A practical example may be studied
 [here](./writer/writer_demo.py).
 The detailed layout of the Python file may be seen [here](./writer/DRIVERS.md).
+
+###### [Contents](./FONT_TO_PY.md#0-contents)
 
 # 4. Python font files
 
@@ -231,7 +246,9 @@ An alternative implementation of binary fonts may be found in
 [this repo](https://github.com/antirez/microfont). It provides for rotated
 rendering to a `FrameBuffer`.
 
-# 6. Dependencies, links and licence
+###### [Contents](./FONT_TO_PY.md#0-contents)
+
+# 6. Dependencies links and licence
 
 The code is released under the MIT licence. The `font_to_py.py` utility
 requires Python 3.2 or later.
@@ -290,6 +307,8 @@ With a font of height 20 pixels RAM saving was an order of magnitude. The
 saving will be greater if larger fonts are used as RAM usage is independent of
 the array sizes.
 
+###### [Contents](./FONT_TO_PY.md#0-contents)
+
 # Appendix 2: Recent improvements
 
 The representation of non-contiguous character sets such as the `extended` set
@@ -305,11 +324,12 @@ keeps the code small and efficient for the common (default) case.
 Larger character sets are assumed to be sparse and the emitted code uses an
 index optimised for sparse values and a binary search algorithm.
 
-# Appendix 3: font_test.py
+# Appendix 3: Testing
 
-This enables a Python font file to be described and rendered at the command
-prompt. It provides a useful way of checking unknown font files. Compatibility
-with files created by old versions of `font_to_py` is not guaranteed.
+The file `font_test.py` enables a Python font file to be described and rendered
+at the command prompt. It provides a useful way of checking unknown font files.
+Compatibility with files created by old versions of `font_to_py` is not
+guaranteed.
 
 It runs under Python 3.2 or above. Given a font `myfont.py` the following will
 render the supplied string (assuming that `font_test.py` has executable
@@ -356,3 +376,35 @@ Start char " " (ord 32) end char "~" (ord 126)
 ...................................................
 ...................................................
 ```
+###### [Contents](./FONT_TO_PY.md#0-contents)
+
+# Appendix 4 Custom character sets
+
+A common requirement is to create Python fonts containing a specific set of
+glyphs - typically for non-English languages, or simply to include additional
+symbols such as `°`. This is achieved by creating a "charset" file containing the
+entire set of required glyphs. Python fonts are then created using the `-k`
+option, specifying the charset file as follows:
+```shell
+font_to_py.py FreeSans.ttf 20 freesans_cyr_20.py -k cyrillic
+font_to_py.py -x -k extended FreeSans.ttf 17 font10.py
+```
+Example charsets may be found in the `charsets` directory, a non-English example
+being `cyrillic`. The `extended` file adds unicode characters `°μπωϕθαβγδλΩ` to
+those in the original ASCII set of printable characters. This might be edited to
+produce a custom version.
+
+At risk of stating the obvious, for this process to succeed the source font file
+must include all specified glyphs.
+
+Submissions of charset files, particularly for non-English languages, are
+welcome.
+
+# Appendix 5 Iteration
+
+The `-i` or `--iterate` arg is for specialist applications; it causes a
+generator function `glyphs` to be included in the Python font file. A generator
+instantiated with this will yield `bitmap`, `height`, and `width` for every
+glyph in the font.
+
+###### [Contents](./FONT_TO_PY.md#0-contents)
