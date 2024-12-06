@@ -18,10 +18,9 @@ def reverse(s):
 or
 ```py
 def reverse(s):
-    if (l := len(s)) == 1:
+    if not (l := len(s) // 2):
         return s
-    l1 = l // 2
-    return ''.join((rev(s[l1:]), rev(s[:l1])))
+    return ''.join((reverse(s[l:]), reverse(s[:l])))
 ```
 which aims to minimise the number of string creations.
 
