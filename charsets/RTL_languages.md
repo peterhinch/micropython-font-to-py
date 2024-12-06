@@ -27,3 +27,7 @@ which aims to minimise the number of string creations.
 
 Note that the `Textbox` widget relies on word wrap and scrolling: these features
 will only work with LTR text.
+
+### [Main README](https://github.com/peterhinch/micropython-font-to-py/tree/master)
+
+### [WRITER.md](https://github.com/peterhinch/micropython-font-to-py/blob/master/writer/WRITER.md)

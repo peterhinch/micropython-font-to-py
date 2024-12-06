@@ -92,8 +92,7 @@ V0.5.0 Sep 2021
 Requires firmware V1.17 or later.
 
 V0.4.3 Aug 2021  
-Supports fast rendering of glyphs to color displays (PR7682). See
-[Performance](./WRITER.md#223-performance).
+Supports fast rendering of glyphs to color displays (PR7682).
 
 V0.4.0 Jan 2021  
 Improved handling of the `col_clip` and `wrap` options. Improved accuracy
@@ -112,7 +111,7 @@ shows how to drive color displays using the `CWriter` class.
 
  1. `writer.py` Supports `Writer` and `CWriter` classes.
  2. `ssd1306_setup.py` Hardware initialisation for SSD1306. Requires the
- official [SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
+ official [SSD1306 driver](https://github.com/micropython/micropython-lib/tree/master/micropython/drivers/display/ssd1306).
  3. `writer_demo.py` Demo using a 128*64 SSD1306 OLED display. Import to see
  usage information.
  4. `writer_tests.py` Test/demo scripts. Import to see usage information.
@@ -178,7 +177,7 @@ ssd.show()
 
 The file `writer_demo.py` illustrates the use of font files with a 128*64
 SSD1306 OLED display and the official
-[SSD1306 driver](https://github.com/micropython/micropython/blob/master/drivers/display/ssd1306.py).
+[SSD1306 driver](https://github.com/micropython/micropython-lib/tree/master/micropython/drivers/display/ssd1306).
 
 ### 2.1.1 Static Method
 
