@@ -7,12 +7,14 @@ displays with compatible drivers, see
 
 ### [Supported displays document](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md)
 
-Two cross-platform GUI libraries build on this to provide a variety of widgets.
+Three cross-platform GUI libraries build on this to provide a variety of widgets.
 These are:
  * [nano-gui](https://github.com/peterhinch/micropython-nano-gui) An extremely
  lightweight display-only GUI.
  * [micro-gui](https://github.com/peterhinch/micropython-micro-gui) A GUI
  providing input via either pushbuttons or pushbuttons plus a rotary encoder.
+ * [micropython-touch](https://github.com/peterhinch/micropython-touch) Input
+ is provided by touch.
 
 For applications needing only to render text to a display, and optionally to
 draw graphics using `FrameBuffer` primitives, the `writer` module may be used
@@ -52,8 +54,8 @@ The `CWriter` class (from nanogui): `Label` objects in two fonts.
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.1.3 [Methods](./WRITER.md#213-methods)  
   2.2 [The CWriter class](./WRITER.md#22-the-cwriter-class) For colour displays.  
    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.1 [Static Method](./WRITER.md#221-static-method)  
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.2 [Constructor](./WRITER.md#221-constructor)  
-   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.3 [Methods](./WRITER.md#222-methods)  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.2 [Constructor](./WRITER.md#222-constructor)  
+   &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2.2.3 [Methods](./WRITER.md#223-methods)  
   2.3 [Example color code](./WRITER.md#23-example-color-code) For most display drivers.  
   2.4 [Use with 4 bit drivers](./WRITER.md#24-use-with-4-bit-drivers) Color definition uses a different technique.  
  3. [Icons](./WRITER.md#3-icons) How to render simple icons.  
@@ -68,7 +70,7 @@ rendering. Rendering is to a `FrameBuffer` instance, e.g. to a display whose
 driver is subclassed from a `FrameBuffer`.
 
 The module has the following features:  
- * Genarality: capable of working with any `framebuf` derived driver.
+ * Generality: `Writer` can work with any `framebuf` derived driver.
  * Multiple display operation.
  * Text display of fixed and variable pitch fonts with wrapping and vertical
  scrolling.
@@ -77,18 +79,17 @@ The module has the following features:
  * String metrics to enable right or centre justification.
  * Inverse (background color on foreground color) display.
 
-Note that these changes have significantly increased code size. On the ESP8266
-it is likely that `writer.py` will need to be frozen as bytecode. The original
-very simple version still exists as `old_versions/writer_minimal.py`.
+The `CWriter` class requires a compatible display driver. These are listed
+[in this document](https://github.com/peterhinch/micropython-nano-gui/blob/master/DISPLAYS.md).
+There is no support for RTL languages but a workround is discussed
+[here](../charsets/RTL_languages.md).
 
 ## 1.1 Release Notes
 
 V0.5.1 Dec 2022__
 Add support for 4 bit color display drivers.
 V0.5.0 Sep 2021  
-With the release of firmware V1.17, color display now requires this version.
-This enabled the code to be simplified. For old firmware V0.4.3 is available as
-`old_versions/writer_fw_compatible.py`.
+Requires firmware V1.17 or later.
 
 V0.4.3 Aug 2021  
 Supports fast rendering of glyphs to color displays (PR7682). See
@@ -122,16 +123,10 @@ Sample fonts:
  3. `font10.py` Smaller variable pitch fonts.
  4. `font6.py`
 
-Old versions (in `old_versions` directory):
- 1. `writer_minimal.py` A minimal version for highly resource constrained
- devices.
- 2. `writer_fw_compatible.py` V0.4.3. Color display will run on firmware
- versions < 1.17.
-
 ## 1.4 Fonts
 
 Python font files should be created using `font-to-py.py` using horizontal
-mapping (`-x` option). The `-r` option is not required. If RAM is critical
+mapping; this is the default. The `-r` option is not required. If RAM is critical
 fonts may be frozen as bytecode reducing the RAM impact of each font to about
 340 bytes. This is highly recommended.
 
@@ -141,18 +136,12 @@ fonts may be frozen as bytecode reducing the RAM impact of each font to about
 
 The `Writer` class provides fast rendering to monochrome displays using bit
 blitting. The `CWriter` class is a subclass of `Writer` to support color
-displays which now offers comparable performance (see below).
+displays which offers comparable performance.
 
 Multiple screens are supported. On any screen multiple `Writer` or `CWriter`
 instances may be used, each using a different font. A class variable holds the
 state of each screen to ensure that the insertion point is managed across
 multiple instances/fonts.
-
-Former limitations in the `framebuf.blit` method meant it could not be used for
-color display. The `CWriter` class therefore rendered glyphs one pixel at a
-time in Python which was slow. With current firmware and compatible display
-drivers fast C blitting is used. See
-[2.2.3](./WRITER.md#223-a-performance-boost).
 
 ###### [Contents](./WRITER.md#contents)
 
@@ -201,7 +190,7 @@ The `Writer` class exposes the following static method:
  pixels with positive values representing down and right respectively. The
  insertion point defines the top left hand corner of the next character to be
  output.
- 
+
  Where `None` is passed, the setting is left unchanged.  
  Return: `row`, `col` current settings.
 
@@ -268,7 +257,7 @@ The return value is the `idx` value, hence a color can be defined as
 GREEN = CWriter.create_color(ssd, 1, 0, 255, 0)
 ```
 
-### 2.2.1 Constructor
+### 2.2.2 Constructor
 
 This takes the following args:  
  1. `device` The hardware device driver instance for the screen in use.
@@ -280,7 +269,7 @@ This takes the following args:
 The constructor checks for suitable firmware and also for a compatible device
 driver: an `OSError` is raised if these are absent.
 
-### 2.2.2 Methods
+### 2.2.3 Methods
 
 All methods of the base class are supported. Additional method:  
  1. `setcolor(fgcolor=None, bgcolor=None)`. Sets the foreground and background
@@ -304,10 +293,9 @@ adapted for other hardware. In order to run this, the following files need to
 be copied to the host's filesystem:
  * `writer.py`
  * `freesans20.py`
- * The display driver. This must be copied with its directory structure from
- [nano-gui](https://github.com/peterhinch/micropython-nano-gui/tree/master/drivers)
- including the file `drivers/boolpalette.py`. Only the part of the tree relevant
- to the display in use need be copied, in this case `drivers/ssd1351/ssd1351.py`.
+ * The display driver. This should be installed as per
+ [this document](https://github.com/peterhinch/micropython-nano-gui/blob/master/DRIVERS.md#12-installation)
+ to ensure the correct directory structure.
 
 ```python
 import machine
