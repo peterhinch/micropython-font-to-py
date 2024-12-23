@@ -20,7 +20,7 @@ If a device subclasses `framebuf.FrameBuffer` the following libraries enhance
 its capability. The [Writer](./WRITER.md) class enables it to use multiple
 fonts with additional functionality such as word wrap, string metrics and tab
 handling. The [nano-gui](https://github.com/peterhinch/micropython-nano-gui.git)
-provides rudimentary GUI displayt capability with minimal RAM use. The
+provides rudimentary GUI display capability with minimal RAM use. The
 [micro-gui](https://github.com/peterhinch/micropython-micro-gui) library is
 more fully featured, providing a means of user input at some cost in size and
 complexity.
