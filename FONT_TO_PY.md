@@ -71,7 +71,7 @@ API is unchanged.
 
 # 2. Dependencies
 
-The utility requires Python 3.2 or greater, also `freetype` which may be
+The utility requires Python 3.2 or greater, also [freetype-py](https://github.com/rougier/freetype-py) which may be
 installed using `pip3`. On Linux (you may need a root prompt):
 
 ```shell
