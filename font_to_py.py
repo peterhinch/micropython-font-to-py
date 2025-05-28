@@ -11,7 +11,7 @@
 
 # The MIT License (MIT)
 #
-# Copyright (c) 2016-2024 Peter Hinch
+# Copyright (c) 2016-2025 Peter Hinch
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -634,7 +634,8 @@ character set (from 32 to 126 inclusive). This range cannot be overridden.
 Random access font files don't support an error character.
 """
 
-if __name__ == "__main__":
+
+def main():
     parser = argparse.ArgumentParser(
         __file__, description=DESC, formatter_class=argparse.RawDescriptionHelpFormatter
     )
@@ -778,3 +779,7 @@ if __name__ == "__main__":
             sys.exit(1)
 
     print(args.outfile, "written successfully.")
+
+
+if __name__ == "__main__":
+    main()

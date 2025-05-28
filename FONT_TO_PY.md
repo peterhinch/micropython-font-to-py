@@ -6,7 +6,7 @@ A PC utility for converting industry standard font files to Python source code.
 
 1. [Introdction](./FONT_TO_PY.md#1-introduction) Creating Python fonts.  
  1.1 [Revision history](./FONT_TO_PY.md#11-revision-history)  
-2. [Dependencies](./FONT_TO_PY.md#2-dependencies) Installation.  
+2. [Installation](./FONT_TO_PY.md#2-installation)  
 3. [Usage](./FONT_TO_PY.md#3-usage)  
  3.1 [Arguments](./FONT_TO_PY.md#31-arguments)  
  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;3.1.1 [Mandatory positional arguments](./FONT_TO_PY.md#311-mandatory-positional-arguments)  
@@ -34,10 +34,14 @@ alternative which is a random access binary file on the filesystem.
 The format of the Python font file is designed to save large amounts of RAM on
 resource-limited targets: the font file may be incorporated into a firmware
 build such that it occupies flash memory rather than scarce RAM. Python code
-built into firmware is known as frozen bytecode.
+built into firmware is known as frozen bytecode. An alternative is
+[romfs](https://docs.micropython.org/en/latest/reference/mpremote.html#mpremote-command-romfs).
+This achieves the same RAM efficiency as frozen bytecode without the need to
+recompile.
 
 ## 1.1 Revision history
 
+28 May 2025 V0.42.2 Publish to PyPi, update docs.
 22 Mar 2024 V0.42 Default mapping is now horizontal.  
 30 Jan 2023 V0.41 With thanks to @ferrolive (Igor Oliveira) who supplied the
 charset file.
@@ -69,14 +73,12 @@ API is unchanged.
 ###### [Main README](./README.md)
 ###### [Contents](./FONT_TO_PY.md#0-contents)
 
-# 2. Dependencies
+# 2. Installation
 
-The utility requires Python 3.2 or greater, also [freetype-py](https://github.com/rougier/freetype-py) which may be
-installed using `pip3`. On Linux (you may need a root prompt):
+The utility requires Python 3.6 or greater. It is installed using pip:
 
 ```shell
-# apt-get install python3-pip
-# pip install freetype-py
+$ pip install font_to_py
 ```
 
 # 3. Usage
@@ -302,7 +304,8 @@ The `foo()` function emulates the behaviour of a device driver in rendering a
 character to a display. The local variables constitute memory which is
 reclaimed on exit from the function. Its additional RAM use was 16 bytes.
 
-Similar figures were found in recent (2019) testing on a Pyboard D.
+Similar figures were found in testing on a Pyboard D. Also using `romfs` instead
+of freezing bytecode.
 
 ## Conclusion
 
